@@ -1,0 +1,27 @@
+{
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "rewrites": [{
+      "source": "**",
+      "function": "app"
+    }
+  ],
+    "site": "capable-warriors-app",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+    
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

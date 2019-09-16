@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security App</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    
+</head>
+<body>
+    <nav class="navbar navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="./index.html">Create an Account</a>
+    </nav>
+    <div class="container" style="height: 100vh">
+        <div class="align-middle"style="height: 100vh; padding: 10vh 0;">
+            
+            <span id="error" style="color: red; font-size: 12px;"></span><br><br>
+                
+            <form id = "create-form">
+                <input type="email" class="form-control" id="create-email" placeholder="Email" required><br>
+                <input type="password" class="form-control" id="create-password" placeholder="Password" required><br>
+                <input type="password" class="form-control" id="create-confirm-password" placeholder="Confirm Password" required><br>
+                <input type="text" class="form-control" id="create-first-name" placeholder="First Name" required><br>
+                <input type="text" class="form-control" id="create-last-name" placeholder="Last Name" required><br>
+                <textarea class="form-control" id="create-address" placeholder="Address" rows = "5" required></textarea><br>
+                <button type="submit" class="btn btn-secondary btn-block" id="login-button">Create</button>
+            </form>
+        </div>
+    </div>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="/__/firebase/6.6.0/firebase-app.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-auth.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-firestore.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-messaging.js"></script>
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        https://firebase.google.com/docs/web/setup#reserved-urls -->
+    <!-- Initialize Firebase -->
+    <script src="/__/firebase/init.js"></script>
+    <script>
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const createForm = document.querySelector("#create-form");
+
+        createForm.addEventListener("submit", (e)=>{
+            e.preventDefault();
+
+            const email = createForm['create-email'].value;
+            const password = createForm['create-password'].value;
+            const confirmPassword = createForm['create-confirm-password'].value;
+            const firstName = createForm['create-first-name'].value;
+            const lastName = createForm['create-last-name'].value;
+            const address = createForm['create-address'].value;
+
+            if(password == confirmPassword){
+                auth.createUserWithEmailAndPassword(email, password).then(authUser =>{
+                    return db.collection('userDetails').doc(authUser.user.uid).set({
+                        firstName: firstName,
+                        lastName: lastName,
+                        address: address,
+                        village: "",
+                        adminLevel: "user"
+                    })
+                }).then(()=>{
+                    location.href='./home'
+                })
+                .catch(error => {
+                    document.querySelector("#error").innerHTML = error.message;
+                })      
+            }
+            else{
+                document.querySelector("#error").innerHTML = "passwords didn't not match";
+            }
+        })
+
+
+
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security App</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Security App</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" id="details" data-toggle="modal" data-target="#detailsModal">Details</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!--Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">User Details</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body" id="details-modal-body">
+              
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+    </div>
+    <!--Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Logout</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to logout?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="logout">Yes</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div id="user-area">
+            <button id="sos" class="btn btn-danger btn-block" style="max-width: 500px; border-radius: 100%; border: orangered 20px solid; height: 300px; margin: 30px auto; width: 100%"><h1>SOS</h1></button>
+            <button id="predef-fire" class="btn btn-secondary">Fire</button>
+            <button id="predef-robbery" class="btn btn-secondary">Robbery</button>
+            <button class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button>
+        </div>
+        
+       
+    </div>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="/__/firebase/6.6.0/firebase-app.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-auth.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-firestore.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-messaging.js"></script>
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        https://firebase.google.com/docs/web/setup#reserved-urls -->
+    <!-- Initialize Firebase -->
+    <script src="/__/firebase/init.js"></script>
+    <script>
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let lat;
+        let long;
+        let name;
+        let address;
+        function checkAuth(){
+            auth.onAuthStateChanged(user => {
+                if(!user){
+                    location.href='/';
+                    alert("please login");
+                }
+            })
+            
+        }
+        document.querySelector("#details").addEventListener('click',()=>{
+            auth.onAuthStateChanged(user => {
+                db.collection('userDetails').doc(user.uid).get().then(doc => {
+                    name = doc.data().firstName+" "+doc.data().lastName 
+                    address = doc.data().address
+                    document.querySelector('#details-modal-body').innerHTML = " <p>Name: <strong>"+name+"</strong></p><p>Address: <strong>"+address+"</strong></p> ";
+                })     
+            });
+        })
+
+        document.querySelector("#logout").addEventListener('click',()=>{
+            auth.signOut().then(()=> {
+                location.href='./index.html';
+                alert("successfully logged out");
+            })
+        })
+
+        function get(){
+            console.log("Latitude: " + lat + " Longitude: " + long)
+            console.log("name " + name + " address " + address)
+        }
+
+        document.querySelector("#predef-fire").addEventListener('click', ()=>{
+            fetch("https://fcm.googleapis.com/fcm/send", {
+                method: 'POST',
+                body: JSON.stringify({
+                    "to": "d2AwgvlLGU4:APA91bHwd0ipeb2NgOo7AmF7fJMwXhvZx3FPDLJC_gUVKxm3YT5u7rXFkP54RQmWvfgIKN6-lh8WS2V1AoWh7egA_YIZ1AEujV7KZHhyEtcU64GFWPB0Ib2lcnRDk_jmrqgCX8lpijVG",
+	                "data": {
+                        "notification":{
+                            "title": "HELP REQUEST!",
+                            "body": "body"
+                        }
+                    }
+                }),
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization': 'key=AAAAMFeimHk:APA91bGttP6G0LcSKlGb-7P1TYmnc3FUdOtZrD3WUbwkyT0V7yP21o-GPLQqOVSwG2GPMYyY62GUFh2CnddyI5NLOCrB2nANZZiWHHtguXH64kPP2OVCmzXoZf-Yv6K8oXq4DMuCKDm-'
+                }
+            })
+            .then(response => response.json())
+            .then(response => console.log('Success:', JSON.stringify(response)))
+            .catch(error => console.error('Error:', error));
+        })
+
+        document.querySelector("#sos").addEventListener('click',()=>{
+
+            auth.onAuthStateChanged(authUser => {
+                time = new Date()
+                db.collection('messages').doc(authUser.uid).set({
+                    message: "HELP REQUEST",
+                    when: time
+                })
+            })
+
+            showPosition=(position)=> {
+                lat= position.coords.latitude
+                long= position.coords.longitude
+                // console.log("show pos Latitude: " + lat + " Longitude: " + long)
+            }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            } 
+            else {
+                console.log('Turn on your GPS, try again')
+            }
+            get();
+
+
+            fetch("https://fcm.googleapis.com/fcm/send", {
+                method: 'POST',
+                body: JSON.stringify({
+                    "to": "d2AwgvlLGU4:APA91bHwd0ipeb2NgOo7AmF7fJMwXhvZx3FPDLJC_gUVKxm3YT5u7rXFkP54RQmWvfgIKN6-lh8WS2V1AoWh7egA_YIZ1AEujV7KZHhyEtcU64GFWPB0Ib2lcnRDk_jmrqgCX8lpijVG",
+	                "data": {
+                        "notification":{
+                            "title": "HELP REQUEST!",
+                            "body": lat
+                        }
+                    }
+                }),
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization': 'key=AAAAMFeimHk:APA91bGttP6G0LcSKlGb-7P1TYmnc3FUdOtZrD3WUbwkyT0V7yP21o-GPLQqOVSwG2GPMYyY62GUFh2CnddyI5NLOCrB2nANZZiWHHtguXH64kPP2OVCmzXoZf-Yv6K8oXq4DMuCKDm-'
+                }
+            })
+            .then(response => response.json())
+            .then(response => console.log('Success:', JSON.stringify(response)))
+            .catch(error => console.error('Error:', error));
+
+            
+        })
+
+        window.onload=checkAuth();
+        
+
+
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>

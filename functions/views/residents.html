@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security App</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" type="image/png" href="images/logo1.png"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <style>
+        #snackbar {
+          visibility: hidden;
+          min-width: 250px;
+          margin-left: -125px;
+          background-color: #333;
+          color: #fff;
+          text-align: center;
+          border-radius: 2px;
+          padding: 16px;
+          position: fixed;
+          z-index: 1;
+          left: 50%;
+          bottom: 30px;
+          font-size: 17px;
+        }
+        
+        #snackbar.show {
+          visibility: visible;
+          -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+          animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        
+        @-webkit-keyframes fadein {
+          from {bottom: 0; opacity: 0;} 
+          to {bottom: 30px; opacity: 1;}
+        }
+        
+        @keyframes fadein {
+          from {bottom: 0; opacity: 0;}
+          to {bottom: 30px; opacity: 1;}
+        }
+        
+        @-webkit-keyframes fadeout {
+          from {bottom: 30px; opacity: 1;} 
+          to {bottom: 0; opacity: 0;}
+        }
+        
+        @keyframes fadeout {
+          from {bottom: 30px; opacity: 1;}
+          to {bottom: 0; opacity: 0;}
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Security App</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/residents">Residents</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/villages">Villages</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="pt-5">
+            <h3 class="mb-2">Residents</h3>
+            <h5>unregistered residents</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered" id="tbl-unreg-residents">
+                    <thead class="thead-dark">
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Village</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        <tr id='tbl-unreg-spinner'>
+                            <td colspan="4" class="p-3">
+                                <div class="d-flex justify-content-center">
+                                  <div class="spinner-border" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                  </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h5>registered residents</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered" id="tbl-residents">
+                    <thead class="thead-dark">
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Village</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        <tr id='tbl-spinner'>
+                            <td colspan="4" class="p-3">
+                                <div class="d-flex justify-content-center">
+                                  <div class="spinner-border" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                  </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="snackbar">Saving..</div>
+
+    <!--Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Logout</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to logout?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="logout">Yes</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="/__/firebase/6.6.0/firebase-app.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-auth.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-firestore.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-messaging.js"></script>
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        https://firebase.google.com/docs/web/setup#reserved-urls -->
+    <!-- Initialize Firebase -->
+    <script src="/__/firebase/init.js"></script>
+    <script>
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+
+        $(document).ready(function(){
+            getUnregResidents();
+            getResidents();
+            
+        });
+
+        $('#logout').click(function(){
+            firebase.auth().signOut().then(function() {
+                location.href='/';
+            }).catch(function(error) {
+                location.href='/';
+            });
+        })
+        //unregisted residents
+        function getUnregResidents() {
+            db.collection("userDetails").get()
+            .then(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    if(doc.data().village == ""){
+                        displayUnregResidents(doc.id, doc.data());
+                    }
+                });
+            })
+            .catch(function(error) {
+                console.log("Error getting documents: ", error);
+            });
+            
+        }
+
+        function displayUnregResidents(id, data) {
+            $('#tbl-unreg-spinner').hide();
+            html = "";
+            $("#tbl-unreg-residents > tbody").append(html);
+
+            html += "<tr>";
+            // html += "<td>"+data.username+"</td>";     
+            html += "<td>"+data.firstName+" "+data.lastName+"</td>";
+            html += "<td>"+data.address+"</td>";
+            html += `<td class = 'col-6'><select class='form-control' id='villages`+id+`'>
+                    </select></td>`;
+            html += "<td class='text-right'>"; 
+            html += `<button href='#' class='btn btn-block btn-sm btn-outline-primary' id='save`+id+`' data-id='`+id+`'>SAVE</button> `;     
+            html += "</td></tr>";
+
+            $("#tbl-unreg-residents > tbody").append(html);
+            getdropdown(id);
+            
+            let saves = document.querySelector("#save"+id);
+            saves.addEventListener("click",function(e){
+                let pickedVillage = document.querySelector('#villages'+id).value;
+                snackBar();
+                // console.log(id);
+                // console.log(pickedVillage);
+                setvill = db.collection("userDetails").doc(id);
+                setvill.update({village: pickedVillage}).then(()=>{
+                    location.reload();
+                })
+                
+
+            })
+        } 
+        
+        function snackBar() {
+            var x = document.getElementById("snackbar");
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 6000);
+        }
+        
+
+        function getdropdown(id){
+            let villages = document.querySelector('#villages'+id)
+            db.collection("village").orderBy('name').get()
+            .then(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    console.log(doc.id, doc.data());
+                    villages.innerHTML += `<option value=`+doc.id+`>`+doc.data().name+`</option>`
+                });
+            })
+        }
+        //registered residents
+        function getResidents() {
+            db.collection("userDetails").get()
+            .then(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    if(doc.data().village != ""){
+                        // console.log("here"+doc.id)
+                        displayResidents(doc.id, doc.data());
+                    }
+                });
+            })
+            .catch(function(error) {
+                console.log("Error getting documents: ", error);
+            });
+            
+        }
+
+        function displayResidents(id, data) {
+            $('#tbl-spinner').hide();
+            html = "";
+            $("#tbl-residents > tbody").append(html);
+
+            html += "<tr>";
+            // html += "<td>"+data.username+"</td>";     
+            html += "<td>"+data.firstName+" "+data.lastName+"</td>";
+            html += "<td>"+data.address+"</td>";
+            html += `<td class = 'col-6' id='village`+id+`'></td>`;
+            html += "<td class='text-right'>"; 
+            html += "<button href='#' class='btn btn-block btn-sm btn-outline-primary'>EDIT VILLAGE</button> ";
+            html += "</td></tr>";
+
+            $("#tbl-residents > tbody").append(html);
+            getVillage(data.village,id);
+            
+        }
+        function getVillage(villageId,id){
+            console.log("here"+villageId)
+            let villages = document.querySelector('#village'+id)
+            db.collection("village").get()
+            .then(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    if(villageId == doc.id){
+                    console.log(doc.id, doc.data());
+                    villages.innerHTML = doc.data().name
+                    }
+                });
+            })
+        }
+       
+
+        
+            
+        
+    </script>
+</body>
+</html>

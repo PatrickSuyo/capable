@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <link rel="icon" href=""/>
+    </head>
+    <body>
+        <div>
+            <h1>hi there</h1>
+        </div>
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="/__/firebase/6.6.0/firebase-app.js"></script>
+        <script src="/__/firebase/6.6.0/firebase-messaging.js"></script>
+        <!-- TODO: Add SDKs for Firebase products that you want to use
+            https://firebase.google.com/docs/web/setup#reserved-urls -->
+        <!-- Initialize Firebase -->
+        <script src="/__/firebase/init.js"></script>
+        <script>
+            const messaging = firebase.messaging();
+            
+            messaging.usePublicVapidKey("BJkXfXEfhu-YAPExtxEvPtfH-qblvHqEt3Wsquw0apTaGvGYq1HSCIusFLTuLvC9ZNGjO0mYKUzD6bCdE9ZCpBk")
+
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    console.log('Notification permission granted.');
+                    // TODO(developer): Retrieve an Instance ID token for use with FCM.
+                    // ...
+                    return messaging.getToken()
+                    .then((currentToken) => {
+                        console.log(currentToken)
+                    })
+                } else {
+                    console.log('Unable to get permission to notify.');
+                }
+            });
+            
+        </script>
+        
+        
+    </body>
+</html>
