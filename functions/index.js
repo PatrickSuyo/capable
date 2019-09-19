@@ -13,6 +13,8 @@ const app = express();
 //     res.sendFile(__dirname + "/views/index.html")
 // })
 
+app.use(express.static(path.join(__dirname, '/')));
+
 app.get('/signin', function (req, res) {
   res.sendFile(__dirname + "/views/login.html")
   // console.log(req.params)
@@ -56,5 +58,7 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + "/views/index.html")
   console.log(req.param.villageId)
 })
+
+
 
 exports.app = functions.https.onRequest(app);
