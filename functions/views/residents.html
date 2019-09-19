@@ -63,6 +63,9 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="nav navbar-nav ml-auto">
                 <li class="nav-item">
+                    <a class="nav-link" href="/home-admin">Home</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/residents">Residents</a>
                 </li>
                 <li class="nav-item">
@@ -179,7 +182,7 @@
             db.collection("userDetails").get()
             .then(function(querySnapshot) {
                 querySnapshot.forEach(function(doc) {
-                    if(doc.data().village == ""){
+                    if(doc.data().village == "" && doc.data().adminLevel != "admin"){
                         displayUnregResidents(doc.id, doc.data());
                     }
                 });
@@ -245,7 +248,7 @@
             db.collection("userDetails").get()
             .then(function(querySnapshot) {
                 querySnapshot.forEach(function(doc) {
-                    if(doc.data().village != ""){
+                    if(doc.data().village != ""&& doc.data().adminLevel != "admin"){
                         // console.log("here"+doc.id)
                         displayResidents(doc.id, doc.data());
                     }
@@ -268,11 +271,22 @@
             html += "<td>"+data.address+"</td>";
             html += `<td class = 'col-6' id='village`+id+`'></td>`;
             html += "<td class='text-right'>"; 
-            html += "<button href='#' class='btn btn-block btn-sm btn-outline-primary'>EDIT VILLAGE</button> ";
+            html += `<button href='#' class='btn btn-block btn-sm btn-outline-primary' id='edit`+id+`' data-id='`+id+`'>EDIT VILLAGE</button> `;
             html += "</td></tr>";
 
             $("#tbl-residents > tbody").append(html);
             getVillage(data.village,id);
+            let edits = document.querySelector("#edit"+id);
+            edits.addEventListener("click",function(e){
+                snackBar();
+                
+                setvill = db.collection("userDetails").doc(id);
+                setvill.update({village: ""}).then(()=>{
+                    location.reload();
+                })
+                
+
+            })
             
         }
         function getVillage(villageId,id){

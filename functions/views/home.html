@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -90,6 +91,21 @@
         let long;
         let name;
         let address;
+        let time;
+        let userid;
+        let sendTo;
+
+        showPosition=(position)=> {
+            lat= position.coords.latitude
+            long= position.coords.longitude  
+        }
+        if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+        } 
+        else {
+            console.log('Turn on your GPS, try again')
+        }
+
         function checkAuth(){
             auth.onAuthStateChanged(user => {
                 if(!user){
@@ -99,14 +115,17 @@
             })
             
         }
+        auth.onAuthStateChanged(user => {
+            db.collection('userDetails').doc(user.uid).get().then(doc => {
+                userid = user.uid;
+                name = doc.data().firstName+" "+doc.data().lastName 
+                address = doc.data().address
+                village = doc.data().village
+                
+            })     
+        });
         document.querySelector("#details").addEventListener('click',()=>{
-            auth.onAuthStateChanged(user => {
-                db.collection('userDetails').doc(user.uid).get().then(doc => {
-                    name = doc.data().firstName+" "+doc.data().lastName 
-                    address = doc.data().address
-                    document.querySelector('#details-modal-body').innerHTML = " <p>Name: <strong>"+name+"</strong></p><p>Address: <strong>"+address+"</strong></p> ";
-                })     
-            });
+            document.querySelector('#details-modal-body').innerHTML = " <p>Name: <strong>"+name+"</strong></p><p>Address: <strong>"+address+"</strong></p> ";
         })
 
         document.querySelector("#logout").addEventListener('click',()=>{
@@ -116,12 +135,9 @@
             })
         })
 
-        function get(){
-            console.log("Latitude: " + lat + " Longitude: " + long)
-            console.log("name " + name + " address " + address)
-        }
 
         document.querySelector("#predef-fire").addEventListener('click', ()=>{
+            
             fetch("https://fcm.googleapis.com/fcm/send", {
                 method: 'POST',
                 body: JSON.stringify({
@@ -144,37 +160,57 @@
         })
 
         document.querySelector("#sos").addEventListener('click',()=>{
-
-            auth.onAuthStateChanged(authUser => {
-                time = new Date()
-                db.collection('messages').doc(authUser.uid).set({
-                    message: "HELP REQUEST",
-                    when: time
-                })
-            })
-
             showPosition=(position)=> {
                 lat= position.coords.latitude
-                long= position.coords.longitude
-                // console.log("show pos Latitude: " + lat + " Longitude: " + long)
+                long= position.coords.longitude  
             }
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition);
+                    navigator.geolocation.getCurrentPosition(showPosition);
             } 
             else {
                 console.log('Turn on your GPS, try again')
             }
-            get();
+            auth.onAuthStateChanged(authUser => {  
+                time = new Date()
+                db.collection('messages').add({
+                    sender: name,
+                    message: "HELP REQUEST",
+                    when: time,
+                    lat: lat,
+                    long: long,
+                    village: village
+                }).then(()=>{db.collection("userDetails").get()
+                    .then(function(querySnapshot) {
+                        querySnapshot.forEach(function(doc) {
+                            console.log(doc.data().adminLevel, doc.data().village, village)
+                            if(doc.data().adminLevel == "admin" && doc.data().village == village){
+                                sendTo=doc.data().token
+                                console.log(sendTo);
+                            }
+                        });
+                    }).then(()=>{
+                        push(sendTo, long, lat, time, name, address, village)
+                    })
+                })
+            })
 
-
-            fetch("https://fcm.googleapis.com/fcm/send", {
+            function push(sendTo, long, lat, time, name, address, village){
+                console.log(""+long, lat, time, name, address, village, sendTo);
+                fetch("https://fcm.googleapis.com/fcm/send", {
                 method: 'POST',
                 body: JSON.stringify({
-                    "to": "d2AwgvlLGU4:APA91bHwd0ipeb2NgOo7AmF7fJMwXhvZx3FPDLJC_gUVKxm3YT5u7rXFkP54RQmWvfgIKN6-lh8WS2V1AoWh7egA_YIZ1AEujV7KZHhyEtcU64GFWPB0Ib2lcnRDk_jmrqgCX8lpijVG",
-	                "data": {
+                    "to": sendTo, 
+                    "data": {
                         "notification":{
                             "title": "HELP REQUEST!",
-                            "body": lat
+                            "body": {
+                                "long": long,
+                                "lat": lat,
+                                "time": time,
+                                "name": name,
+                                "address": address,
+                                "village": village
+                            }
                         }
                     }
                 }),
@@ -186,6 +222,8 @@
             .then(response => response.json())
             .then(response => console.log('Success:', JSON.stringify(response)))
             .catch(error => console.error('Error:', error));
+            }
+            
 
             
         })

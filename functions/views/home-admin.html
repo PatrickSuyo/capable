@@ -8,8 +8,66 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
     <style>
+            /* Chat containers */
+        .container {
+        border: 2px solid #dedede;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        padding: 10px;
+        }
+    
+        /* Darker chat container */
+        .darker {
+        border-color: #ccc;
+        background-color: #ddd;
+        }
+    
+        /* Clear floats */
+        .container::after {
+        content: "";
+        clear: both;
+        display: table;
+        }
+    
+        /* Style images */
+        .container img {
+        float: left;
+        max-width: 60px;
+        width: 100%;
+        margin-right: 20px;
+        border-radius: 50%;
+        }
+    
+        /* Style the right image */
+        .container img.right {
+        float: right;
+        margin-left: 20px;
+        margin-right:0;
+        }
+    
+        /* Style time text */
+        .time-right {
+        float: right;
+        color: #aaa;
+        }
+    
+        /* Style time text */
+        .time-left {
+        float: left;
+        color: #999;
+        }
+        .my-custom-scrollbar {
+        position: relative;
+        height: 500px;
+        overflow: auto;
+        }
+        .table-wrapper-scroll-y {
+        display: block;
+        }
+        .pad{
+            padding: 10px;
+        }
         #snackbar {
           visibility: hidden;
           min-width: 250px;
@@ -63,8 +121,18 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="nav navbar-nav ml-auto">
                 <li class="nav-item">
+                    <a class="nav-link" href="/home-admin">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/residents">Residents</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/villages">Villages</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Logout</a>
                 </li>
+                
             </ul>
         </div>
     </nav>
@@ -90,10 +158,10 @@
         </div>
     </div>
 
-    <div class="container">
-        <div id="admin-area">
-            <p>Im an admin!!</p>
-        </div>
+    <div class="container table-wrapper-scroll-y my-custom-scrollbar" id="scroller">
+        <div id="chat-area">
+
+        </div> 
         <div id="snackbar">ALERT</div>
     </div>
     <!-- The core Firebase JS SDK is always required and must be listed first -->
@@ -109,6 +177,8 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         const messaging = firebase.messaging();
+
+        let village;
 
         messaging.usePublicVapidKey("BJkXfXEfhu-YAPExtxEvPtfH-qblvHqEt3Wsquw0apTaGvGYq1HSCIusFLTuLvC9ZNGjO0mYKUzD6bCdE9ZCpBk")
         
@@ -132,6 +202,10 @@
             // ...
             return messaging.getToken()
             .then((currentToken) => {
+                console.log(currentToken)
+                auth.onAuthStateChanged(user => {
+                    db.collection('userDetails').doc(user.uid).update({token: currentToken})
+                })     
                 
             })
             .catch((err)=>{
@@ -141,12 +215,25 @@
         });
 
         messaging.onMessage((payload)=>{
-            console.log(payload);
             var obj = JSON.parse(payload.data.notification);
-            var notification = new Notification(obj.title, {
-                body:obj.body
-            });
+            var notification = new window.Notification(obj.title);
+            console.log("1 "+obj.body);
+            console.log("2 "+obj.body.name);
+            console.log("3 "+obj.body.time);
+            console.log("4 "+obj.body.lat);
+            console.log("5 "+obj.body.long);
+            console.log("6 "+obj.body.village);
+            let date = new Date();
+            document.querySelector("#chat-area").innerHTML += 
+            `<div class="container pad">
+                <p>HELP REQUEST!!<br>
+                <a href='https://www.google.com/maps?q=`+obj.body.lat+`,`+obj.body.long+`'>current location</a><br>
+                from: `+obj.body.name+`</p>
+                
+                <span class="time-right">`+date.getHours()+`:`+date.getMinutes()+`</span>
+            </div>`;
             snackBar();
+            scrollBot();
         });
 
         function checkAuth(){
@@ -156,14 +243,50 @@
                     alert("please login");
                 }
             })
+            loadChat();
+            scrollBot();
+            
+            
+            
         }
 
+        function scrollBot(){
+            var objDiv = document.querySelector("#scroller");
+            objDiv.scrollTop = objDiv.scrollHeight;
+        }
+
+        function loadChat(){
+            auth.onAuthStateChanged(user => {
+                console.log("user", user.uid);
+                db.collection("messages").orderBy("when").get()
+                .then(messages =>{
+                    messages.forEach(function(doc) {
+                        db.collection("userDetails").doc(user.uid).get().then((user)=>{
+                            
+                            if(doc.data().village == user.data().village){
+                                console.log("message", doc.data().village, user.data().village)
+                            // doc.data() is never undefined for query doc snapshot
+                                document.querySelector("#chat-area").innerHTML += 
+                                `<div class="container pad">
+                                    <p>`+doc.data().message+`<br>
+                                    <a href='https://www.google.com/maps?q=`+doc.data().lat+`,`+doc.data().long+`'>current location</a><br>
+                                    from: `+doc.data().sender+`</p>
+                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+doc.data().when.toDate().getMinutes()+`</span>
+                                </div>`;
+                            }
+                        })
+                    });
+                })
+                scrollBot();
+            });
+        }
+        
         function snackBar() {
             var x = document.getElementById("snackbar");
             x.className = "show";
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 6000);
         }
-        
+
         document.querySelector("#logout").addEventListener('click',()=>{
             auth.signOut().then(()=> {
                 location.href='/';
