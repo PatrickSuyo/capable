@@ -164,6 +164,7 @@
         <div id="chat-area">
 
         </div> 
+        <button class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">answer</button>
         <div id="snackbar">ALERT</div>
     </div>
 
@@ -234,33 +235,40 @@
         });
 
         messaging.onMessage((payload)=>{
+            
+
             var obj = JSON.parse(payload.data.notification);
             if (window.Notification && Notification.permission == 'granted') {
              //
             } else if (isNewNotificationSupported()) {
                 var notification = new Notification(obj.title);
             }
-            
-            console.log("1 "+obj.body);
-            console.log("2 "+obj.body.name);
-            console.log("3 "+obj.body.time);
-            console.log("4 "+obj.body.lat);
-            console.log("5 "+obj.body.long);
-            console.log("6 "+obj.body.village);
-            console.log("7 "+obj.body.address);
-            let date = new Date();
-            document.querySelector("#chat-area").innerHTML += 
-            `<div class="container pad">
-                <p>HELP REQUEST!!<br>
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#locationModal">current location</a>
-                from: `+obj.body.name+`<br>
-                address: `+obj.body.address+`
-                </p>
-                <span class="time-right">`+date.getHours()+`:`+addZero(date.getMinutes());+`</span>
-            </div>`;
-            document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+obj.body.lat+`,`+obj.body.long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`;
-            snackBar();
-            scrollBot();
+
+            if(obj.title == "call"){
+                console.log("calling")
+            }
+            else{
+                console.log("1 "+obj.body);
+                console.log("2 "+obj.body.name);
+                console.log("3 "+obj.body.time);
+                console.log("4 "+obj.body.lat);
+                console.log("5 "+obj.body.long);
+                console.log("6 "+obj.body.village);
+                console.log("7 "+obj.body.address);
+                let date = new Date();
+                document.querySelector("#chat-area").innerHTML += 
+                `<div class="container pad">
+                    <p>HELP REQUEST!!<br>
+                    <a class="nav-link" href="#" data-toggle="modal" data-target="#locationModal">current location</a>
+                    from: `+obj.body.name+`<br>
+                    address: `+obj.body.address+`
+                    </p>
+                    <span class="time-right">`+date.getHours()+`:`+addZero(date.getMinutes());+`</span>
+                </div>`;
+                document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+obj.body.lat+`,`+obj.body.long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`;
+                snackBar();
+                scrollBot();
+            }
         });
 
         function addZero(i) {

@@ -79,7 +79,7 @@
             <button id="sos" class="btn btn-danger btn-block" style="max-width: 500px; border-radius: 100%; border: orangered 20px solid; height: 300px; margin: 30px auto; width: 100%"><h1 id="btn-title">SOS</h1></button>
             <button id="predef-fire" class="btn btn-secondary">Fire</button>
             <button id="predef-robbery" class="btn btn-secondary">Robbery</button>
-            <button class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button>
+            <button id = "call" class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button>
         </div>
         
        
@@ -173,9 +173,42 @@
             .catch(error => console.error('Error:', error));
         })
 
-        document.querySelector("#call").addEventListener('click',()=>{
-            
-        })
+        // document.querySelector("#call").addEventListener('click',()=>{
+        //     db.collection("userDetails").get()
+        //         .then(function(querySnapshot) {
+        //             querySnapshot.forEach(function(doc) {
+        //                 console.log(doc.data().adminLevel, doc.data().village, village)
+        //                 if(doc.data().adminLevel == "admin" && doc.data().village == village){
+        //                     sendTo=doc.data().token
+        //                     console.log(sendTo);
+        //                 }
+        //             });
+        //         }).then(()=>{
+        //             callpush(sendTo)
+        //         })
+        // })
+
+        function callpush(sendTo){
+                console.log(""+long, lat, time, name, address, village, sendTo);
+                fetch("https://fcm.googleapis.com/fcm/send", {
+                method: 'POST',
+                body: JSON.stringify({
+                    "to": sendTo, 
+                    "data": {
+                        "notification":{
+                            "title": "call",
+                        }
+                    }
+                }),
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization': 'key=AAAAMFeimHk:APA91bGttP6G0LcSKlGb-7P1TYmnc3FUdOtZrD3WUbwkyT0V7yP21o-GPLQqOVSwG2GPMYyY62GUFh2CnddyI5NLOCrB2nANZZiWHHtguXH64kPP2OVCmzXoZf-Yv6K8oXq4DMuCKDm-'
+                }
+            })
+            .then(response => response.json())
+            .then(response => console.log('Success:', JSON.stringify(response)))
+            .catch(error => console.error('Error:', error));
+        }
 
         document.querySelector("#sos").addEventListener('click',()=>{
             var trigger = document.getElementById("vip-tog");
