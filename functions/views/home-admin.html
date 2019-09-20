@@ -164,7 +164,7 @@
         <div id="chat-area">
 
         </div> 
-        <button style = "visibility: hidden;"class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">answer</button>
+        <button id = "call" style = "visibility: hidden;"class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">answer</button>
         <div id="snackbar">ALERT</div>
     </div>
 
@@ -246,6 +246,8 @@
 
             if(obj.title == "call"){
                 console.log("calling")
+                document.querySelector("#call").style.visibility = "visible";
+                
             }
             else{
                 console.log("1 "+obj.body);
