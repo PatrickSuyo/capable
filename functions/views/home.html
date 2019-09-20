@@ -173,20 +173,20 @@
             .catch(error => console.error('Error:', error));
         })
 
-        // document.querySelector("#call").addEventListener('click',()=>{
-        //     db.collection("userDetails").get()
-        //         .then(function(querySnapshot) {
-        //             querySnapshot.forEach(function(doc) {
-        //                 console.log(doc.data().adminLevel, doc.data().village, village)
-        //                 if(doc.data().adminLevel == "admin" && doc.data().village == village){
-        //                     sendTo=doc.data().token
-        //                     console.log(sendTo);
-        //                 }
-        //             });
-        //         }).then(()=>{
-        //             callpush(sendTo)
-        //         })
-        // })
+        document.querySelector("#call").addEventListener('click',()=>{
+            db.collection("userDetails").get()
+                .then(function(querySnapshot) {
+                    querySnapshot.forEach(function(doc) {
+                        console.log(doc.data().adminLevel, doc.data().village, village)
+                        if(doc.data().adminLevel == "admin" && doc.data().village == village){
+                            sendTo=doc.data().token
+                            console.log(sendTo);
+                        }
+                    });
+                }).then(()=>{
+                    callpush(sendTo)
+                })
+        })
 
         function callpush(sendTo){
                 console.log(""+long, lat, time, name, address, village, sendTo);
