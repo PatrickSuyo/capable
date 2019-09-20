@@ -22,7 +22,7 @@ messaging.setBackgroundMessageHandler(function(payload) {
   var obj = JSON.parse(payload.data.notification);
   const notificationTitle =obj.title;
   const notificationOptions = { 
-    body: 'Background Message body.',
+    // body: 'Background Message body.',
     vibrate: [100, 50, 100]
 
   };

@@ -79,7 +79,7 @@
             <button id="sos" class="btn btn-danger btn-block" style="max-width: 500px; border-radius: 100%; border: orangered 20px solid; height: 300px; margin: 30px auto; width: 100%"><h1 id="btn-title">SOS</h1></button>
             <button id="predef-fire" class="btn btn-secondary">Fire</button>
             <button id="predef-robbery" class="btn btn-secondary">Robbery</button>
-            <button class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button>
+            <button id="call" class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button>
         </div>
         
        
@@ -173,8 +173,8 @@
             .catch(error => console.error('Error:', error));
         })
 
-        document.querySelector("#call").addEventListener('click',()=>{
-            
+        document.querySelector('#call').addEventListener('click',()=>{
+
         })
 
         document.querySelector("#sos").addEventListener('click',()=>{
@@ -189,6 +189,8 @@
             }
             send_request();
         })
+
+        
 
         function send_request() {
             showPosition=(position)=> {
