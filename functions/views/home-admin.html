@@ -234,9 +234,12 @@
             
         });
 
-        messaging.onMessage((payload)=>{
-            
+        document.querySelector("#call").addEventListener("click",()=>{
+            document.querySelector("#call").style.visibility = "hidden";
+        })
 
+        messaging.onMessage((payload)=>{
+    
             var obj = JSON.parse(payload.data.notification);
             if (window.Notification && Notification.permission == 'granted') {
              //
@@ -263,7 +266,7 @@
                     <p>HELP REQUEST!!<br>
                     <a class="nav-link" href="#" data-toggle="modal" data-target="#locationModal">current location</a>
                     from: `+obj.body.name+`<br>
-                    address: `+obj.body.address+`
+                    address: `+obj.body.address+`<br>
                     </p>
                     <span class="time-right">`+date.getHours()+`:`+addZero(date.getMinutes());+`</span>
                 </div>`;
@@ -303,9 +306,7 @@
             })
             loadChat();
             scrollBot();
-            
-            
-            
+        
         }
 
         function scrollBot(){
