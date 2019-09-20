@@ -189,7 +189,7 @@
         })
 
         function callpush(sendTo){
-                console.log(""+long, lat, time, name, address, village, sendTo);
+                // console.log(""+long, lat, time, name, address, village, sendTo);
                 fetch("https://fcm.googleapis.com/fcm/send", {
                 method: 'POST',
                 body: JSON.stringify({
@@ -224,6 +224,15 @@
         })
 
         function send_request() {
+            auth.onAuthStateChanged(user => {
+                db.collection('userDetails').doc(user.uid).get().then(doc => {
+                    userid = user.uid;
+                    name = doc.data().firstName+" "+doc.data().lastName 
+                    address = doc.data().address
+                    village = doc.data().village
+                    
+                })     
+            });
             showPosition=(position)=> {
                 lat= position.coords.latitude
                 long= position.coords.longitude  

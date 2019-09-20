@@ -333,6 +333,7 @@
                                     </p>
                                     <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+doc.data().when.toDate().getMinutes()+`</span>
                                 </div>`;
+                                document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+doc.data().lat+`,`+doc.data().long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`
                             }
                         })
                     });
