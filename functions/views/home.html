@@ -251,7 +251,8 @@
                     when: time,
                     lat: lat,
                     long: long,
-                    village: village
+                    village: village,
+                    address: address
                 }).then(()=>{db.collection("userDetails").get()
                     .then(function(querySnapshot) {
                         querySnapshot.forEach(function(doc) {
