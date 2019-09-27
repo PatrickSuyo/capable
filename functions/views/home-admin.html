@@ -9,8 +9,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <style>
+        #map {
+			height: 100%;
+		}
             /* Chat containers */
-        .container {
+        .chat-container {
         border: 2px solid #dedede;
         background-color: #f1f1f1;
         border-radius: 5px;
@@ -39,16 +42,9 @@
         border-radius: 50%;
         }
     
-        /* Style the right image */
-        .container img.right {
-        float: right;
-        margin-left: 20px;
-        margin-right:0;
-        }
-    
         /* Style time text */
         .time-right {
-        float: right;
+        text-align: right;
         color: #aaa;
         }
     
@@ -159,31 +155,23 @@
             </div>
         </div>
     </div>
-
-    <div class="container table-wrapper-scroll-y my-custom-scrollbar" id="scroller">
-        <div id="chat-area">
-
-        </div> 
-        <button id = "call" style = "visibility: hidden;"class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">answer</button>
-        <div id="snackbar">ALERT</div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="locationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel">Current Location</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body" id="location-body">
-                  
-                </div>
-              </div>
+    
+    
+    <div class = "container-fluid" id="scroller">
+        <div class ="row">
+            <div class = "col chat-container">
+                    <div id="map"></div>
             </div>
-          </div>
+            <div class = "col chat-container" id="scroller">
+                <div class="table-wrapper-scroll-y my-custom-scrollbar" id="chat-area">
+                </div>
+            </div>
+        </div>   
+    </div>
+   
+    <div id="snackbar">ALERT</div>
+    <button id = "call" style = "visibility: hidden;"class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">answer</button>
+
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="/__/firebase/6.6.0/firebase-app.js"></script>
     <script src="/__/firebase/6.6.0/firebase-auth.js"></script>
@@ -199,6 +187,16 @@
         const messaging = firebase.messaging();
 
         let village;
+        let lat;
+        let long;
+
+        
+        // if (navigator.geolocation) {
+        //     navigator.geolocation.getCurrentPosition(showPosition);
+        // } 
+        // else {
+        //     console.log('Turn on your GPS, try again')
+        // }
 
         messaging.usePublicVapidKey("BJkXfXEfhu-YAPExtxEvPtfH-qblvHqEt3Wsquw0apTaGvGYq1HSCIusFLTuLvC9ZNGjO0mYKUzD6bCdE9ZCpBk")
         
@@ -262,19 +260,40 @@
                 console.log("7 "+obj.body.address);
                 let date = new Date();
                 document.querySelector("#chat-area").innerHTML += 
-                `<div class="container pad">
-                    <p>HELP REQUEST!!<br>
-                    <a class="nav-link" href="#" data-toggle="modal" data-target="#locationModal">current location</a>
+                `<div class="chat-container pad">
+                    <p>`+obj.title+`<br>
                     from: `+obj.body.name+`<br>
                     address: `+obj.body.address+`<br>
                     </p>
                     <span class="time-right">`+date.getHours()+`:`+addZero(date.getMinutes());+`</span>
                 </div>`;
-                document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+obj.body.lat+`,`+obj.body.long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`;
+                // document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+obj.body.lat+`,`+obj.body.long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`;
                 snackBar();
                 scrollBot();
+                initMap(obj.body.lat, obj.body.long)
             }
+            
         });
+
+        function initMap(_lat, _long) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+            function showPosition(position) {
+                lat= position.coords.latitude
+                long= position.coords.longitude  
+                console.log(lat, long)
+                var map = new google.maps.Map(document.getElementById('map'), {  
+                    center: {lat: lat, lng: long},
+                    zoom: 13
+                });
+                var marker = new google.maps.Marker({
+                    position: {lat: _lat,lng: _long},
+                    map: map,
+                    title: 'Help Request!!!'
+                });
+            }
+            scrollBot();
+            
+        }
 
         function addZero(i) {
             if (i < 10) {
@@ -310,7 +329,8 @@
         }
 
         function scrollBot(){
-            var objDiv = document.querySelector("#scroller");
+            console.log("scroll")
+            var objDiv = document.querySelector("#chat-area");
             objDiv.scrollTop = objDiv.scrollHeight;
         }
 
@@ -326,21 +346,21 @@
                                 console.log("message", doc.data().village, user.data().village)
                             // doc.data() is never undefined for query doc snapshot
                                 document.querySelector("#chat-area").innerHTML += 
-                                `<div class="container pad">
+                                `<div class="chat-container pad">
                                     <p>`+doc.data().message+`<br>
-                                    <a class="nav-link" href="#" data-toggle="modal" data-target="#locationModal">current location</a>
-                                    from: `+doc.data().sender+`
-                                    address: `+doc.data().address+`
-                                    </p>
-                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+doc.data().when.toDate().getMinutes()+`</span>
+                                    
+                                    from: `+doc.data().sender+`<br>
+                                    address: `+doc.data().address+`<br>
+                                    </p> 
+                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
                                 </div>`;
-                                document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+doc.data().lat+`,`+doc.data().long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`
+                                // document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+doc.data().lat+`,`+doc.data().long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`
                             }
                         })
                     });
                 })
-                scrollBot();
             });
+            scrollBot();
         }
         
         function snackBar() {
@@ -357,6 +377,9 @@
         })
 
         window.onload=checkAuth();
+    </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCxMdVaKCN-_byN7epedMfOzTIWcpsYiY8&callback=initMap">
     </script>
     
     </body>

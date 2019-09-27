@@ -1,8 +1,11 @@
 const functions = require('firebase-functions');
 const express = require('express');
 const path = require('path');
+const ioServer = require('socket.io');
+const RTCMultiConnectionServer = require('rtcmulticonnection-server');
 
 const app = express();
+
 
 // app.get('/signin', function (req, res) {
 //     res.sendFile(__dirname + "/views/login.html")
@@ -49,16 +52,14 @@ app.get('/residents', function (req, res) {
     // console.log(req.params)
 })
 
-app.get('/:villageId', function (req, res) {
-    res.sendFile(__dirname + "/views/index.html")
-    console.log(req.param.villageId)
+app.get('/call', function (req, res) {
+  res.sendFile(__dirname + "/views/call.html")
+  
 })
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + "/views/index.html")
-  console.log(req.param.villageId)
+  
 })
-
-
 
 exports.app = functions.https.onRequest(app);

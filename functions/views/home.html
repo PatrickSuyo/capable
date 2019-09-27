@@ -76,13 +76,19 @@
     <div class="container" style="margin-top: 10px;">
         <div id="user-area">
             <input type="checkbox" id="vip-tog" data-toggle="toggle" data-on="Enable" data-off="Disable" data-style="android" data-onstyle="success" data-offstyle="secondary">
-            <button id="sos" class="btn btn-danger btn-block" style="max-width: 500px; border-radius: 100%; border: orangered 20px solid; height: 300px; margin: 30px auto; width: 100%"><h1 id="btn-title">SOS</h1></button>
-            <button id="predef-fire" class="btn btn-secondary">Fire</button>
-            <button id="predef-robbery" class="btn btn-secondary">Robbery</button>
-            <button id = "call" class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button>
+            <!-- <button id="sos" class="btn btn-danger btn-block" style="max-width: 500px; border-radius: 100%; border: orangered 20px solid; height: 300px; margin: 30px auto; width: 100%"><h1 id="btn-title">SOS</h1></button> -->
+            <div style="margin-top: 20px">
+                <div class="row">
+                    <button id="sos" data-id="Ambulance" class="btn btn-warning col" style="margin: 10px"><img src="img/icons/003-ambulance.png"></button>
+                    <button id="sos" data-id="Fire truck" class="btn btn-primary col" style="margin: 10px"><img src="img/icons/002-fire-truck.png"></button>
+                </div>
+                <div class="row">
+                    <button id="sos" data-id="Police" class="btn btn-danger col" style="margin: 10px"><img src="img/icons/001-police-car.png"></button>
+                    <button id ="call" class="btn btn-success col" onclick="location.href='https://call-capable-warriors.herokuapp.com'" style="margin: 10px">Call</button>
+                </div>
+            </div>
+            <!-- <button  class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button> -->
         </div>
-        
-       
     </div>
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="/__/firebase/6.6.0/firebase-app.js"></script>
@@ -108,6 +114,7 @@
         let userid;
         let sendTo;
         var time_interval;
+        let message;
 
         showPosition=(position)=> {
             lat= position.coords.latitude
@@ -150,29 +157,6 @@
         })
 
 
-        document.querySelector("#predef-fire").addEventListener('click', ()=>{
-            
-            fetch("https://fcm.googleapis.com/fcm/send", {
-                method: 'POST',
-                body: JSON.stringify({
-                    "to": "d2AwgvlLGU4:APA91bHwd0ipeb2NgOo7AmF7fJMwXhvZx3FPDLJC_gUVKxm3YT5u7rXFkP54RQmWvfgIKN6-lh8WS2V1AoWh7egA_YIZ1AEujV7KZHhyEtcU64GFWPB0Ib2lcnRDk_jmrqgCX8lpijVG",
-	                "data": {
-                        "notification":{
-                            "title": "HELP REQUEST!",
-                            "body": "body"
-                        }
-                    }
-                }),
-                headers:{
-                    'Content-Type': 'application/json',
-                    'Authorization': 'key=AAAAMFeimHk:APA91bGttP6G0LcSKlGb-7P1TYmnc3FUdOtZrD3WUbwkyT0V7yP21o-GPLQqOVSwG2GPMYyY62GUFh2CnddyI5NLOCrB2nANZZiWHHtguXH64kPP2OVCmzXoZf-Yv6K8oXq4DMuCKDm-'
-                }
-            })
-            .then(response => response.json())
-            .then(response => console.log('Success:', JSON.stringify(response)))
-            .catch(error => console.error('Error:', error));
-        })
-
         document.querySelector("#call").addEventListener('click',()=>{
             db.collection("userDetails").get()
                 .then(function(querySnapshot) {
@@ -209,28 +193,32 @@
             .then(response => console.log('Success:', JSON.stringify(response)))
             .catch(error => console.error('Error:', error));
         }
+        document.querySelectorAll("#sos").forEach(function(button){
+            button.addEventListener("click", function(){
+                message = button.getAttribute("data-id")
+                var trigger = document.getElementById("vip-tog");
 
-        document.querySelector("#sos").addEventListener('click',()=>{
-            var trigger = document.getElementById("vip-tog");
+                if (trigger.checked == true && time_interval == undefined){
+                    $("#btn-title").text("STOP");    
+                    time_interval = setInterval(function(){ send_request(); }, 30000);
+                } else {
+                    time_interval = clearInterval(time_interval);
+                    $("#btn-title").text("SOS");
+                }
+                send_request(message);
 
-            if (trigger.checked == true && time_interval == undefined){
-                $("#btn-title").text("STOP");    
-                time_interval = setInterval(function(){ send_request(); }, 30000);
-            } else {
-                time_interval = clearInterval(time_interval);
-                $("#btn-title").text("SOS");
-            }
-            send_request();
+            })
         })
+        
 
-        function send_request() {
+        function send_request(message) {
+            
             auth.onAuthStateChanged(user => {
                 db.collection('userDetails').doc(user.uid).get().then(doc => {
                     userid = user.uid;
                     name = doc.data().firstName+" "+doc.data().lastName 
                     address = doc.data().address
-                    village = doc.data().village
-                    
+                    village = doc.data().village   
                 })     
             });
             showPosition=(position)=> {
@@ -243,11 +231,12 @@
             else {
                 console.log('Turn on your GPS, try again')
             }
-            auth.onAuthStateChanged(authUser => {  
+            auth.onAuthStateChanged(authUser => {
+                 
                 time = new Date()
                 db.collection('messages').add({
                     sender: name,
-                    message: "HELP REQUEST!!",
+                    message: "HELP!! Requesting "+message,
                     when: time,
                     lat: lat,
                     long: long,
@@ -263,20 +252,20 @@
                             }
                         });
                     }).then(()=>{
-                        push(sendTo, long, lat, time, name, address, village)
+                        push(sendTo, long, lat, time, name, address, village,message)
                     })
                 })
             })
 
-            function push(sendTo, long, lat, time, name, address, village){
-                console.log(""+long, lat, time, name, address, village, sendTo);
+            function push(sendTo, long, lat, time, name, address, village, message){
+                console.log(""+long, lat, time, name, address, village, sendTo, message);
                 fetch("https://fcm.googleapis.com/fcm/send", {
                 method: 'POST',
                 body: JSON.stringify({
                     "to": sendTo, 
                     "data": {
                         "notification":{
-                            "title": "HELP REQUEST!!",
+                            "title": "HELP!! Requesting "+message,
                             "body": {
                                 "long": long,
                                 "lat": lat,
