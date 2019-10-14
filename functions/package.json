@@ -7,6 +7,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
+    
   },
   "engines": {
     "node": "8"
@@ -21,12 +22,15 @@
     "getstats": "latest",
     "getusermedia": "^2.0.1",
     "multistreamsmixer": "latest",
+    "node-static": "^0.7.10",
     "path": "^0.12.7",
     "recordrtc": "latest",
     "rtcmulticonnection-server": "^1.3.1",
     "simple-peer": "^9.6.0",
     "socket.io": "^2.3.0",
-    "webrtc-adapter": "latest"
+    "socket.io-client": "^2.3.0",
+    "webrtc-adapter": "^7.3.0"
+    
   },
   "devDependencies": {
     "firebase-functions-test": "^0.1.6"
