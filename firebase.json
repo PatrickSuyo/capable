@@ -7,19 +7,16 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "public": "public",
     "rewrites": [{
       "source": "**",
       "function": "app"
-    }
-  ],
-    "site": "capable-warriors-app",
-    "public": "public",
+    }],
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ]
-    
   },
   "storage": {
     "rules": "storage.rules"

@@ -1,21 +1,12 @@
-// http://127.0.0.1:9001
-// http://localhost:9001
-
 const functions = require('firebase-functions');
 const express = require('express');
 const path = require('path');
 
 const app = express();
 
-
-// app.get('/signin', function (req, res) {
-//     res.sendFile(__dirname + "/views/login.html")
-//     // console.log(req.params)
-// })
-
-// app.get('/',(req, res)=> {
-//     res.sendFile(__dirname + "/views/index.html")
-// })
+app.get('/index',(req, res)=> {
+    res.sendFile(__dirname + "/views/index.html")
+})
 
 app.use(express.static(path.join(__dirname, '/')));
 
@@ -57,11 +48,5 @@ app.get('/call', function (req, res) {
   res.sendFile(__dirname + "/views/call.html")
   
 })
-
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + "/views/index.html")
-  
-})
-
 
 exports.app = functions.https.onRequest(app);
