@@ -73,6 +73,25 @@
             </div>
         </div>
     </div>
+     <!--Push Modal -->
+    <div class="modal fade" id="pushModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pushModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id= "pushModalBody">
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+                </div>
+            </div>
+        </div>
     <div class="container" style="margin-top: 10px;">
         <div id="vip"> 
             <input type="checkbox" id="vip-tog" data-toggle="toggle" data-on="Enable" data-off="Disable" data-style="android" data-onstyle="success" data-offstyle="secondary">
@@ -121,6 +140,11 @@
         let sendTo;
         var time_interval;
         let message;
+        let message_id;
+        let token;
+        
+
+        messaging.usePublicVapidKey("BF4RnEglCJNyRXHKIFG5o8MNGE-lRKVQW8XdHUjNG_RWRHow8ptjJ1KBvdVGL9qVeKoaFdNug6Z4uzjkqPE-Oi4")
 
         showPosition=(position)=> {
             lat= position.coords.latitude
@@ -134,6 +158,12 @@
         }
 
         function checkAuth(){
+            if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(showPosition);
+            } 
+            else {
+                console.log('Turn on your GPS, try again')
+            }
             auth.onAuthStateChanged(user => {
                 if(!user){
                     location.href='/index';
@@ -143,12 +173,14 @@
                     var x = document.getElementById("user-area");
                     var y = document.getElementById("confirm");
                     var z= document.getElementById("vip");
-                    if(doc.data().village == null){
-                        y.style.display = "block";
-                        x.style.display = "none";
+                    console.log("confirm",doc.data().village)
+                    if(doc.data().village){
+                        y.style.display = "none";
+                        x.style.display = "block";
                     }
                     else{ 
-                        x.style.display = "block";
+                        y.style.display = "block";
+                        x.style.display = "none";
                     }
 
                     if(doc.data().vip == "yes"){
@@ -159,6 +191,24 @@
                     }
                 })
             })
+            Notification.requestPermission().then(() => {
+                console.log('Notification permission granted.');
+                // TODO(developer): Retrieve an Instance ID token for use with FCM.
+                // ...
+                return messaging.getToken()
+                .then((currentToken) => {
+                    console.log(currentToken)
+                    auth.onAuthStateChanged(user => {
+                        console.log("token saved")
+                        db.collection('userDetails').doc(user.uid).update({token: currentToken})
+                    })     
+                    
+                })
+                .catch((err)=>{
+                console.log('Unable to get permission to notify.', err);
+                })
+                
+            }); 
             
         }
         auth.onAuthStateChanged(user => {
@@ -168,8 +218,9 @@
                 address = doc.data().address
                 village = doc.data().village
                 
-            })     
+            })    
         });
+          
         document.querySelector("#details").addEventListener('click',()=>{
             document.querySelector('#details-modal-body').innerHTML = " <p>Name: <strong>"+name+"</strong></p><p>Address: <strong>"+address+"</strong></p> ";
         })
@@ -226,15 +277,12 @@
                 message = button.getAttribute("data-id")
                 var trigger = document.getElementById("vip-tog");
 
-                if (trigger.checked == true && time_interval == undefined){
-                    $("#btn-title").text("STOP");    
-                    time_interval = setInterval(function(){ send_request(); }, 30000);
+                if (trigger.checked == true && time_interval == undefined){  
+                    time_interval = setInterval(function(){ send_request(message); }, 30000);
                 } else {
                     time_interval = clearInterval(time_interval);
-                    $("#btn-title").text("SOS");
                 }
                 send_request(message);
-
             })
         })
         
@@ -243,10 +291,7 @@
             
             auth.onAuthStateChanged(user => {
                 db.collection('userDetails').doc(user.uid).get().then(doc => {
-                    userid = user.uid;
-                    name = doc.data().firstName+" "+doc.data().lastName 
-                    address = doc.data().address
-                    village = doc.data().village   
+                    
                 })     
             });
             showPosition=(position)=> {
@@ -260,34 +305,50 @@
                 console.log('Turn on your GPS, try again')
             }
             auth.onAuthStateChanged(authUser => {
-                 
-                time = new Date()
-                db.collection('messages').add({
-                    sender: name,
-                    message: "HELP!! Requesting "+message,
-                    when: time,
-                    lat: lat,
-                    long: long,
-                    village: village,
-                    address: address,
-                    read: "no"
-                }).then(()=>{db.collection("userDetails").get()
-                    .then(function(querySnapshot) {
-                        querySnapshot.forEach(function(doc) {
-                            console.log(doc.data().adminLevel, doc.data().village, village)
-                            if(doc.data().adminLevel == "admin" && doc.data().village == village){
-                                sendTo=doc.data().token
-                                console.log("sendTo",sendTo);
-                            }
-                        });
-                    }).then(()=>{
-                        push(sendTo, long, lat, time, name, address, village,message)
+                db.collection('userDetails').doc(authUser.uid).get().then(doc => {
+                    token = doc.data().token;
+                    
+                    console.log("myToken", token)
+                }).then(()=>{     
+                    
+                    time = new Date()
+            
+                    db.collection('messages').add({
+                        sender: name,
+                        message: "HELP!! Requesting "+message,
+                        when: time,
+                        lat: lat,
+                        long: long,
+                        village: village,
+                        address: address,
+                        read: "no",
+                        solved: "no",
+                        alerted: "no",
+                        fromToken: token,
+                        userid: userid
+                        
+                    }).then((docRef)=>{
+                        console.log(docRef.id)
+                        message_id = docRef.id
+                    })
+                    .then(()=>{db.collection("userDetails").get()
+                        .then(function(querySnapshot) {
+                            querySnapshot.forEach(function(doc) {
+                                console.log(doc.data().adminLevel, doc.data().village, village)
+                                if(doc.data().adminLevel == "admin" && doc.data().village == village){
+                                    sendTo=doc.data().token
+                                    console.log("sendTo",sendTo);
+                                }
+                            });
+                        }).then(()=>{
+                            push(sendTo, long, lat, time, name, address, village, message, message_id, token)
+                        })
                     })
                 })
             })
 
-            function push(sendTo, long, lat, time, name, address, village, message){
-                console.log(""+long, lat, time, name, address, village, sendTo, message);
+            function push(sendTo, long, lat, time, name, address, village, message, message_id, token, userid){
+                console.log(""+long, lat, time, name, address, village, sendTo, message, message_id,token, userid);
                 fetch("https://fcm.googleapis.com/fcm/send", {
                 method: 'POST',
                 body: JSON.stringify({
@@ -301,7 +362,10 @@
                                 "time": time,
                                 "name": name,
                                 "address": address,
-                                "village": village
+                                "village": village,
+                                "message_id": message_id,
+                                "fromToken": token,
+                                "userid": userid
                             }
                         }
                     }
@@ -316,6 +380,26 @@
             .catch(error => console.error('Error:', error));
             }
         }
+
+        messaging.onMessage((payload)=>{
+        
+            var obj = JSON.parse(payload.data.notification);
+            if (window.Notification && Notification.permission == 'granted') {
+            //
+            } else if (isNewNotificationSupported()) {
+                var notification = new Notification(obj.title);
+            }
+            console.log("1 "+obj.title);
+            console.log("2 "+obj.body.message);
+            $("#pushModalLabel").html(obj.title)
+            $("#pushModalBody").html(obj.body.message)
+            $("#pushModal").modal("show");
+
+            
+            
+            
+            
+        })
 
         window.onload=checkAuth();
         

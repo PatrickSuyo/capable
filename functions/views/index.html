@@ -10,7 +10,10 @@
 </head>
 <body>
     <div class="container">
-        <div class="align-middle" style="height: 100vh; padding: 50vh 0;">
+        <div class="align-middle" style="height: 100vh; padding: 15vh 0 50vh 0;">
+            <div class="text-center">
+                <img src="src/images/icons/icon-384x384.png" class="rounded img-thumbnail" style = " border: 0 none;box-shadow: none;"alt="...">
+            </div>
             <button type="button" class="btn btn-primary btn-block" onclick="location.href='/create'">Create an Account</button>
             <button type="button" class="btn btn-secondary btn-block" onclick="location.href='/signin'">Login</button>
         </div>
@@ -22,10 +25,36 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="/__/firebase/6.6.0/firebase-app.js"></script>
     <script src="/__/firebase/6.6.0/firebase-auth.js"></script>
+    <script src="/__/firebase/6.6.0/firebase-firestore.js"></script>
     <!-- TODO: Add SDKs for Firebase products that you want to use
         https://firebase.google.com/docs/web/setup#reserved-urls -->
     <!-- Initialize Firebase -->
     <script src="/__/firebase/init.js"></script>
     <script src="src/js/app.js" type="text/javascript"></script>
+    <script>
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        window.onload=checkAuth();
+
+        function checkAuth(){
+            auth.onAuthStateChanged(user => {
+                if(user){
+                    db.collection('userDetails').doc(user.uid).get().then(doc => {
+                        if(doc.data().adminLevel == "admin"){
+                            location.href='/home-admin';
+                        }
+                        else if(doc.data().adminLevel == "sec"){
+                            location.href='/sec';
+                        }
+                        else{
+                            location.href='/home';
+                        }
+                    })
+                }
+            })
+        }
+    </script>
 </body>
 </html>

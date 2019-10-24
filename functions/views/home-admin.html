@@ -219,6 +219,8 @@
         let lat;
         let long;
         var map;
+        let solvedCount = 0;
+        let message;
 
         
         // if (navigator.geolocation) {
@@ -288,9 +290,11 @@
                 console.log("5 "+obj.body.long);
                 console.log("6 "+obj.body.village);
                 console.log("7 "+obj.body.address);
+                console.log("8 "+obj.body.message_id);
+                console.log("9 "+obj.body.fromToken);
                 let date = new Date();
                 document.querySelector("#chat-area").innerHTML += 
-                `<div class="new-chat-container pad">
+                `<div class="new-chat-container pad" data-id="`+obj.body.message_id+`" data-token="`+obj.body.fromToken+`" data-id="`+obj.body.userid+`">
                     <div class ="row">
                         <div class="col-8">
                             <p>`+obj.title+`<br>
@@ -299,7 +303,7 @@
                             </p>
                         </div>
                         <div class="col-4" style ="margin-bottom: 1rem">
-                            <button type="button" class="btn btn-secondary btn-block respo" style="height: 100%;" id="respond">respond</button>
+                            <button type="button" class="btn btn-secondary btn-block respo" id="respond">respond</button>
                         </div>
                     </div>
                     <div class ="row">
@@ -312,25 +316,116 @@
                 scrollBot();
                 placePin(obj.body.lat, obj.body.long, obj.body.name)
                 snackBar();
-            }
-            
+            }   
         })
 
+        // function initMap() {
+        //     navigator.geolocation.getCurrentPosition(showPosition);
+        //     function showPosition(position) {
+        //         lat= position.coords.latitude
+        //         long= position.coords.longitude  
+        //         console.log(lat, long)
+        //         map = new google.maps.Map(document.getElementById('map'), {  
+        //             center: {lat: lat, lng: long},
+        //             zoom: 13
+        //         });
+                
+        //     }
+        //     scrollBot();
+        // }
+
+            //with multiple pins
         function initMap() {
+            var infoWindow = new google.maps.InfoWindow();
             navigator.geolocation.getCurrentPosition(showPosition);
             function showPosition(position) {
                 lat= position.coords.latitude
                 long= position.coords.longitude  
-                console.log(lat, long)
+                console.log("lat long",lat, long)
                 map = new google.maps.Map(document.getElementById('map'), {  
                     center: {lat: lat, lng: long},
                     zoom: 13
                 });
-                
             }
-            scrollBot();
+ 
+            // Create LatLngBounds object.
+            var latlngbounds = new google.maps.LatLngBounds();
+            auth.onAuthStateChanged(user => {
+                db.collection("messages").orderBy("when").get()
+                    .then(messages =>{
+                        solvedCount = 0;
+                        messages.forEach(function(doc) {
+                            console.log("SOLVED", doc.data().solved)
+                            if (doc.data().solved == "no"){
+                                solvedCount ++;
+                                console.log("add", solvedCount)
+                            }
+                                console.log("count",solvedCount);
+                                if(solvedCount != 0){
+                                    console.log("count2",solvedCount);
+                                    console.log("why?")
+                                    
+                                    db.collection("userDetails").doc(user.uid).get().then((user)=>{
+                                        if(doc.data().village == user.data().village){
+                                            if (doc.data().solved == "no"){
+                                                console.log("markers", doc.data().lat, doc.data().long)
+                                                var myLatlng = new google.maps.LatLng(doc.data().lat, doc.data().long);
+                                                var marker = new google.maps.Marker({
+                                                    position: myLatlng,
+                                                    map: map,
+                                                    title: 'Help Request from '+ doc.data().sender
+                                                });
+                                                (function (marker, doc) {
+                                                    google.maps.event.addListener(marker, "click", function (e) {
+                                                        infoWindow.setContent("<div style = 'width:200px;min-height:40px'>" + doc.data().message + "<br><br><button class = 'btn btn-sm btn-secondary deletePin' data-id="+doc.id+">delete</button></div>");
+                                                        infoWindow.open(map, marker);
+                                                    });
+                                                })(marker, doc);
+                                                latlngbounds.extend(marker.position);
+                                            }
+                                        }
+                                        var bounds = new google.maps.LatLngBounds();
+                                        map.fitBounds(latlngbounds);
+                                        console.log(map.getZoom());
+                                        if(map.getZoom() > 13){
+                                            map.setZoom(13);
+                                        }
+                                    })
+                                }
+                            
+                        })
+                    })
+            })
             
         }
+
+
+    //     for (var i = 0; i < markers.length; i++) {
+    //         var data = markers[i]
+    //         var myLatlng = new google.maps.LatLng(data.lat, data.lng);
+    //         var marker = new google.maps.Marker({
+    //             position: myLatlng,
+    //             map: map,
+    //             title: data.title
+    //         });
+    //         (function (marker, data) {
+    //             google.maps.event.addListener(marker, "click", function (e) {
+    //                 infoWindow.setContent("<div style = 'width:200px;min-height:40px'>" + data.description + "</div>");
+    //                 infoWindow.open(map, marker);
+    //             });
+    //         })(marker, data);
+ 
+    //         //Extend each marker's position in LatLngBounds object.
+    //         latlngbounds.extend(marker.position);
+    //     }
+ 
+    //     //Get the boundaries of the Map.
+    //     var bounds = new google.maps.LatLngBounds();
+ 
+    //     //Center map and adjust Zoom based on the position of all markers.
+    //     map.setCenter(latlngbounds.getCenter());
+    //     map.fitBounds(latlngbounds);
+    
 
         function placePin(_lat, _long, _name){
             console.log("map", map)
@@ -340,7 +435,10 @@
                     map: map,
                     title: 'Help Request from '+_name
                 });
+                
             }
+            initMap();
+            
         }
 
         function addZero(i) {
@@ -379,23 +477,89 @@
                     loadChat();
                 })
             })
-            
         }
-
         document.querySelector("#chat-area").addEventListener('click', function(e){
             if(e.target.classList.contains('respo')) {
-                console.log("here")
+                console.log(e.target.parentNode)
+                x = e.target.parentNode.parentNode.parentNode
+                x.setAttribute("class", "chat-container pad")
+                
+                let messageID = x.getAttribute("data-id")
+                let senderToken = x.getAttribute("data-token")
+                let senderID = x.getAttribute("data-id")
+                console.log("sender", senderToken);
+                
+                db.collection('messages').doc(messageID)
+                .update({read: "yes"})
+                .then(()=>{
+                    db.collection('messages').doc(messageID).get().then(doc => {
+                    //    console.log(doc.data().message.slice(18))
+                       message = doc.data().message.slice(18)
+                    }).then(()=>{
+                        console.log("respondpush",senderToken, message)
+                        respondPush(senderToken, message);
+                        alertPush(senderID, message);
+                    })
+                    
+                })
+
+                e.target.remove();
+                // alertPush(senderID, message);
             }
-            
+
+        });
+
+        function respondPush(senderToken, message){
+            console.log("respondpush 2 ",senderToken, message)
+            fetch("https://fcm.googleapis.com/fcm/send", {
+                method: 'POST',
+                body: JSON.stringify({
+                    "to": senderToken, 
+                    "data": {
+                        "notification":{
+                            "title": "Help is on the way",
+                            "body":{
+                                "message": "Your "+message+" request will be there shortly"
+                            }
+                        }
+                    }
+                }),
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization': 'key=AAAAjASwrMs:APA91bHRryIujStkzpAP5fHsmzbB20uwtM3-FwadgdrMbAs2J5AveXRtiVlJ-4T8r1vYq5a0iAw77QofchZcleBXl2QJJfBQOxS_iAUk1AMpILa8AZdpIx0W8tYd_gRCr1uv21v531YX'
+                }
+            })
+            .then(response => response.json())
+            .then(response => console.log('Success:', JSON.stringify(response)))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function alertPush(senderID, message){
+            console.log("alertpush", senderID, message)
+        }
+
+        
+
+
+        
+        document.querySelector("#map").addEventListener('click', function(e){
+            if(e.target.classList.contains('deletePin')) { 
+                let messageID = e.target.getAttribute("data-id")
+                console.log(messageID)
+                db.collection('messages').doc(messageID).update({solved: "yes"})
+                // navigator.geolocation.getCurrentPosition(showPosition);
+                // function showPosition(position) {
+                //     lat= position.coords.latitude
+                //     long= position.coords.longitude  
+                //     console.log("lat long",lat, long)
+                //     map = new google.maps.Map(document.getElementById('map'), {  
+                //         center: {lat: lat, lng: long},
+                //         zoom: 13
+                //     });
+                // }
+                initMap();
+            }
 		});
-
-
-        // document.querySelectorAll("#respond").forEach(function(button){
-        //     button.addEventListener("click", function(){
-        //         // document.getElementById("#new-chat-container").className = "chat-container";
-        //         console.log("button", button)
-        //     })
-        // })
 
         function scrollBot(){
             console.log("scroll")
@@ -410,13 +574,12 @@
                 .then(messages =>{
                     messages.forEach(function(doc) {
                         db.collection("userDetails").doc(user.uid).get().then((user)=>{
-                            
                             if(doc.data().village == user.data().village){
                                 console.log("message", doc.data().village, doc.data().read, user.data().village)
                             // doc.data() is never undefined for query doc snapshot
                                 if(doc.data().read == "no"){
                                     document.querySelector("#chat-area").innerHTML += 
-                                    `<div class="new-chat-container pad">
+                                    `<div class="new-chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
                                         <div class ="row">
                                             <div class="col-8">
                                                 <p>`+doc.data().message+`<br>
@@ -425,7 +588,7 @@
                                                 </p>
                                             </div>
                                             <div class="col-4" style ="margin-bottom: 1rem">
-                                                <button type="button" class="btn btn-secondary btn-block respo" style="height: 100%;" id="respond" >respond</button>
+                                                    <button type="button" class="btn btn-secondary btn-block respo" id="respond" >respond</button>
                                             </div>
                                         </div>
                                         <div class ="row">
@@ -438,12 +601,12 @@
                                 }
                                 else{
                                     document.querySelector("#chat-area").innerHTML += 
-                                    `<div class="chat-container pad">
+                                    `<div class="chat-container pad data-id="`+doc.id+`">
                                         <div class ="row">
                                             <div class="col-8">
                                                 <p>`+doc.data().message+`<br>
                                                 from: `+doc.data().sender+`<br>
-                                                address: `+doc.data().address`<br>
+                                                address: `+doc.data().address+`<br>
                                                 </p>
                                             </div>
                                         </div>
@@ -462,8 +625,7 @@
                         })
                     });
                 })
-            })
-            
+            }) 
         }
         
         function snackBar() {
@@ -482,7 +644,7 @@
         window.onload=checkAuth();
     </script>
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZV_QQ1df4Rq_uFIgu0I2ngfBNZU496OE">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIIjMbH8s7Opm7MVI_5vhG9aUQQM_Gs7Q">
     </script>
     
     </body>
