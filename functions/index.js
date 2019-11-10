@@ -20,7 +20,7 @@ app.get('/home', function (req, res) {
   // console.log(req.params)
 })
 
-app.get('/home-sec', function (req, res) {
+app.get('/sec', function (req, res) {
   res.sendFile(__dirname + "/views/sec.html")
   // console.log(req.params)
 })

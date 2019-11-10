@@ -226,10 +226,15 @@
         })
 
         document.querySelector("#logout").addEventListener('click',()=>{
+            auth.onAuthStateChanged(user => {
+                db.collection('userDetails').doc(user.uid).update({token: ""})
+            })
             auth.signOut().then(()=> {
                 location.href='/index';
                 alert("successfully logged out");
             })
+
+            
         })
 
 
@@ -366,8 +371,10 @@
                                 "message_id": message_id,
                                 "fromToken": token,
                                 "userid": userid
-                            }
+                            },
+                            "icon": "src/images/icons/icon-72x72.png"
                         }
+                        
                     }
                 }),
                 headers:{
