@@ -74,6 +74,7 @@
         }
         .pad{
             padding: 10px;
+            width: 95%;
         }
         #snackbar {
           visibility: hidden;
@@ -150,7 +151,7 @@
             box-shadow: 5px 5px 5px #888888;
         }
         div.selected {
-            background:#00cc00;
+            background:#ddd;
         }
 
 
@@ -245,7 +246,8 @@
         let message;
         var latlngbounds;
         var infoWindow;
-        var marker;
+        var marker = [];
+        var i = 0;
         
         // if (navigator.geolocation) {
         //     navigator.geolocation.getCurrentPosition(showPosition);
@@ -317,8 +319,11 @@
                 console.log("8 "+obj.body.message_id);
                 console.log("9 "+obj.body.fromToken);
                 let date = new Date();
+                $('#chat-area').find('.pad').each(function(){
+                    $(this).removeClass("selected")
+                }) 
                 document.querySelector("#chat-area").innerHTML += 
-                `<div class="new-chat-container pad" data-id="`+obj.body.message_id+`" data-token="`+obj.body.fromToken+`" data-id="`+obj.body.userid+`">
+                `<div class="new-chat-container pad selected" data-id="`+obj.body.message_id+`" data-token="`+obj.body.fromToken+`" data-id="`+obj.body.userid+`">
                     <input type="radio" name="chat" value="`+obj.body.message_id+`" id="`+obj.body.message_id+`" />
                     <div class ="row">
                         <div class="col-8">
@@ -373,14 +378,16 @@
                     
                 });
             }
- 
+            
             // Create LatLngBounds object.
             latlngbounds = new google.maps.LatLngBounds();
             auth.onAuthStateChanged(user => {
                 db.collection("messages").orderBy("when").get()
                     .then(messages =>{
                         solvedCount = 0;
+                        
                         messages.forEach(function(doc) {
+                            
                             console.log("SOLVED", doc.data().solved)
                             if (doc.data().solved == "no"){
                                 solvedCount ++;
@@ -394,9 +401,10 @@
                                     db.collection("userDetails").doc(user.uid).get().then((user)=>{
                                         if(doc.data().village == user.data().village){
                                             if (doc.data().solved == "no"){
+                                                
                                                 console.log("markers", doc.data().lat, doc.data().long)
                                                 var myLatlng = new google.maps.LatLng(doc.data().lat, doc.data().long);
-                                                marker = new google.maps.Marker({
+                                                marker[i] = new google.maps.Marker({
                                                     position: myLatlng,
                                                     map: map,
                                                     id: doc.id,
@@ -405,15 +413,14 @@
                                                     // icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
                                                 });
                                                 
+                                                google.maps.event.addListener(marker[i], "click", function (e) {
+                                                    infoWindow.setContent("<div style = 'width:200px;min-height:40px'>" + doc.data().message + "<br><br><button class = 'btn btn-sm btn-secondary deletePin' data-id="+doc.id+">delete</button></div>");
+                                                    infoWindow.open(map, this);
+                                                });
                                                 
-                                                (function (marker, doc) {
-                                                    google.maps.event.addListener(marker, "click", function (e) {
-                                                        infoWindow.setContent("<div style = 'width:200px;min-height:40px'>" + doc.data().message + "<br><br><button class = 'btn btn-sm btn-secondary deletePin' data-id="+doc.id+">delete</button></div>");
-                                                        infoWindow.open(map, marker);
-                                                    });
-                                                })(marker, doc);
                                                 // markers.push(marker)
-                                                latlngbounds.extend(marker.position);
+                                                latlngbounds.extend(marker[i].position);
+                                                i++;
                                             }
                                         }
                                         var bounds = new google.maps.LatLngBounds();
@@ -462,7 +469,7 @@
         function placePin(_lat, _long, _name, _id){
             console.log("map", map)
             if(_lat != null){
-                marker = new google.maps.Marker({
+                var marker1 = new google.maps.Marker({
                     position: {lat: _lat,lng: _long},
                     map: map,
                     id:_id,
@@ -470,21 +477,26 @@
                     animation: google.maps.Animation.DROP,
                     // icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
                 });
-                (function (marker) {
-                    google.maps.event.addListener(marker, "click", function (e) {
+                (function (marker1) {
+                    google.maps.event.addListener(marker1, "click", function (e) {
                         db.collection("messages").doc(_id).get().then((doc) =>{
                             infoWindow.setContent("<div style = 'width:200px;min-height:40px'>" + doc.data().message + "<br><br><button class = 'btn btn-sm btn-secondary deletePin' data-id="+doc.id+">delete</button></div>");
-                            infoWindow.open(map, marker);
+                            infoWindow.open(map, marker1);
                         })
                     });
-                })(marker);
+                })(marker1);
                 
-                latlngbounds.extend(marker.position);
+                latlngbounds.extend(marker1.position);
                 map.fitBounds(latlngbounds);
             }
+            marker.push(marker1);
+            for(i = 0; i < marker.length; i++){
+                marker[i].setAnimation(null);
+            }
             
+            bounceMarker(_id);
+
             scrollBot();
-            bounceMarker();
             // initMap();
             
         }
@@ -619,13 +631,24 @@
             }
 		});
 
+        
+        
+        
         function scrollBot(){
+            $(":radio").hide().click(function(e){
+                e.stopPropagation();
+            });
             $('#chat-area').find('.pad').click( function() { 
+                $('#chat-area').find('.pad').each(function(){
+                    $(this).removeClass("selected")
+                })
+                    
+                $(this).addClass("selected") 
+
                 id = $(this).attr("data-id")
                 $("#"+ id).prop("checked", true);
                 var radioValue = $("input[name='chat']:checked").val();
-                alert(radioValue)
-                bounceMarker();
+                bounceMarker(radioValue)
             });
             console.log("scroll")
             var objDiv = document.querySelector("#chat-area");
@@ -633,8 +656,22 @@
         }
 
         function bounceMarker(radioValue){
-            console.log(marker);
-
+            console.log("hello", marker);
+            console.log("hello2", radioValue);
+            
+            for(i = 0; i < marker.length; i++){
+                if(marker[i].id == radioValue){
+                    console.log("ani", marker[i].getAnimation())
+                    if (marker[i].getAnimation() === null) {
+                        marker[i].setAnimation(google.maps.Animation.BOUNCE);
+                        console.log("bounce", marker[i].getAnimation())
+                    }
+                }
+                else{
+                    marker[i].setAnimation(null);
+                }
+            }
+            
         }
 
         function loadChat(){
@@ -694,9 +731,7 @@
                             }
                         })
                         .then(()=>{
-                            // $(":radio").hide().click(function(e){
-                            //     e.stopPropagation();
-                            // });
+                            
                            
                             console.log("here")
                             scrollBot()
@@ -705,6 +740,7 @@
                 })
             }) 
         }
+        
 
         
         
