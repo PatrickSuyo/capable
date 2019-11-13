@@ -358,7 +358,21 @@
                 });
             })
         }
-       
+        function checkAuth(){
+            auth.onAuthStateChanged(user => {
+                if(!user){
+                    location.href='/index';
+                    alert("please login");
+                }
+                db.collection('userDetails').doc(user.uid).get().then(doc => {
+                    if(doc.data().adminLevel != "admin"){
+                        location.href='/residents';
+                    }else if(doc.data().adminLevel != "user"){
+                        location.href='/home';
+                    }
+                })
+            })
+        }
 
         
             

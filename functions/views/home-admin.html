@@ -529,8 +529,10 @@
                     alert("please login");
                 }
                 db.collection('userDetails').doc(user.uid).get().then(doc => {
-                    if(doc.data().adminLevel != "admin"){
+                    if(doc.data().adminLevel -= "user"){
                         location.href='/home';
+                    }else if (doc.data().adminLevel == "superadmin"){
+                        location.href='/superadmin';
                     }
                 }).then(()=>{
                     initMap();
