@@ -8,7 +8,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         #map {
 			height: 100%;
@@ -171,11 +170,11 @@
                     <a class="nav-link" href="/home-admin">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/residents">Residents</a>
+                    <a class="nav-link" href="/residents-superadmin">Residents</a>
                 </li>
-                <!-- <li class="nav-item">
+                <li class="nav-item">
                     <a class="nav-link" href="/villages">Villages</a>
-                </li> -->
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Logout</a>
                 </li>
@@ -223,7 +222,7 @@
 
 
     <div id="snackbar">ALERT</div>
-    <button id = "call" style = "visibility: hidden;"class="btn btn-success">answer</button>
+    <button id = "call" style = "visibility: hidden;"class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">answer</button>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="/__/firebase/6.6.0/firebase-app.js"></script>
@@ -307,9 +306,6 @@
             if(obj.title == "call"){
                 console.log("calling")
                 document.querySelector("#call").style.visibility = "visible";
-                document.querySelector("#call").onclick = function() { 
-                    location.href='https://call-capable-warriors.herokuapp.com#lat:'+ obj.lat +'long:'+ obj.long
-                };
                 
             }
             else{
@@ -336,10 +332,7 @@
                             address: `+obj.body.address+`<br>
                             </p>
                         </div>
-                        <div class="col-4" style ="margin-bottom: 1rem">
-                            <button type="button" class="btn btn-secondary btn-block respo" id="respond">respond</button>
-                            <button type="button" class="btn btn-secondary btn-block alert" id="alert" >alert</button>
-                        </div>
+                        
                     </div>
                     <div class ="row">
                         <div class="col">
@@ -414,8 +407,7 @@
                                                     map: map,
                                                     id: doc.id,
                                                     title: 'Help Request from '+ doc.data().sender,
-                                                    animation: google.maps.Animation.DROP,
-                                                    zoom: 13
+                                                    animation: google.maps.Animation.DROP
                                                     // icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
                                                 });
                                                 
@@ -567,34 +559,7 @@
                     }).then(()=>{
                         console.log("respondpush",senderToken, message)
                         respondPush(senderToken, message);
-                        // alertPush(senderID, message);
-                    })
-                    
-                })
-
-                e.target.remove();
-                // alertPush(senderID, message);
-            }
-            else if(e.target.classList.contains('alert')) {
-                console.log(e.target.parentNode)
-                x = e.target.parentNode.parentNode.parentNode
-                // x.setAttribute("class", "chat-container pad")
-                
-                let messageID = x.getAttribute("data-id")
-                let senderToken = x.getAttribute("data-token")
-                let senderID = x.getAttribute("data-id")
-                console.log("sender", senderToken);
-                
-                db.collection('messages').doc(messageID)
-                .update({alerted: "yes"})
-                .then(()=>{
-                    db.collection('messages').doc(messageID).get().then(doc => {
-                    //    console.log(doc.data().message.slice(18))
-                       message = doc.data().message.slice(18)
-                    }).then(()=>{
-                        // console.log("respondpush",senderToken, message)
-                        // respondPush(senderToken, message);
-                        alertPush(senderToken, message);
+                        alertPush(senderID, message);
                     })
                     
                 })
@@ -639,55 +604,9 @@
             .catch(error => console.error('Error:', error));
         }
 
-        function alertPush(senderToken, message){
-            // console.log("alertpush", senderID, message)
-            auth.onAuthStateChanged(admin => {
-                console.log("admin", admin.uid);
-                db.collection("userDetails").get()
-                .then(residents =>{
-                    residents.forEach(function(doc) {
-                        db.collection("userDetails").doc(admin.uid).get().then((admin)=>{
-                            console.log("compare", doc.data().token , senderToken)
-                            if(doc.data().village == admin.data().village && doc.data().token != senderToken && doc.data().adminLevel != "admin" && doc.data().adminLevel != "superadmin" && doc.data().adminLevel != "sec"){
-                                let incident;
-                                if(message == "Ambulance"){
-                                    incident = "an Accident/Emergency"
-                                }
-                                else if(message == "Fire Truck"){
-                                    incident = "a Fire"
-                                }
-                                else if(message == "Police"){
-                                    incident = "a Robbery/Crime"
-                                }
+        function alertPush(senderID, message){
+            console.log("alertpush", senderID, message)
 
-
-                                fetch("https://fcm.googleapis.com/fcm/send", {
-                                    method: 'POST',
-                                    body: JSON.stringify({
-                                        "to": doc.data().token, 
-                                        "data": {
-                                            "notification":{
-                                                "title": "Incident nearby",
-                                                "body":{
-                                                    "message": "someone in you area reported "+ incident
-                                                },
-                                                "icon": "src/images/icons/icon-72x72.png"
-                                            }
-                                        }
-                                    }),
-                                    headers:{
-                                        'Content-Type': 'application/json',
-                                        'Authorization': 'key=AAAAjASwrMs:APA91bHRryIujStkzpAP5fHsmzbB20uwtM3-FwadgdrMbAs2J5AveXRtiVlJ-4T8r1vYq5a0iAw77QofchZcleBXl2QJJfBQOxS_iAUk1AMpILa8AZdpIx0W8tYd_gRCr1uv21v531YX'
-                                    }
-                                })
-                                .then(response => response.json())
-                                .then(response => console.log('Success:', JSON.stringify(response)))
-                                .catch(error => console.error('Error:', error));
-                                                }
-                                            })
-                                        })
-                                    })
-                                })
         }
 
 
@@ -762,105 +681,52 @@
                 .then(messages =>{
                     messages.forEach(function(doc) {
                         db.collection("userDetails").doc(user.uid).get().then((user)=>{
-                            if(doc.data().village == user.data().village){
+                            
                                 console.log("message", doc.data().village, doc.data().read, user.data().village)
                             // doc.data() is never undefined for query doc snapshot
                                 if(doc.data().read == "no"){
-                                    if(doc.data().alerted == "no"){
-                                        document.querySelector("#chat-area").innerHTML += 
-                                        `
-                                        <div class="new-chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
-                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
-                                            <div class ="row">
-                                                <div class="col-8">
-                                                    <p>`+doc.data().message+`<br>
-                                                    from: `+doc.data().sender+`<br>
-                                                    address: `+doc.data().address+`<br>
-                                                    </p>
-                                                </div>
-                                                <div class="col-4" style ="margin-bottom: 1rem">
-                                                        <button type="button" class="btn btn-secondary btn-block respo" id="respond" >respond</button>
-                                                        <button type="button" class="btn btn-secondary btn-block alert" id="alert" >alert</button>
-                                                </div>
+                                    document.querySelector("#chat-area").innerHTML += 
+                                    `
+                                    <div class="new-chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
+                                        <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
+                                        <div class ="row">
+                                            <div class="col-8">
+                                                <p>`+doc.data().message+`<br>
+                                                from: `+doc.data().sender+`<br>
+                                                address: `+doc.data().address+`<br>
+                                                </p>
                                             </div>
-                                            <div class ="row">
-                                                <div class="col">
-                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
-                                                </div>
+                                            
+                                        </div>
+                                        <div class ="row">
+                                            <div class="col">
+                                                <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
                                             </div>
-                                        </div>`;
-                                    }
-                                    else{
-                                        document.querySelector("#chat-area").innerHTML += 
-                                        `
-                                        <div class="new-chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
-                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
-                                            <div class ="row">
-                                                <div class="col-8">
-                                                    <p>`+doc.data().message+`<br>
-                                                    from: `+doc.data().sender+`<br>
-                                                    address: `+doc.data().address+`<br>
-                                                    </p>
-                                                </div>
-                                                <div class="col-4" style ="margin-bottom: 1rem">
-                                                        <button type="button" class="btn btn-secondary btn-block respo" id="respond" >respond</button>
-                                                </div>
-                                            </div>
-                                            <div class ="row">
-                                                <div class="col">
-                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
-                                                </div>
-                                            </div>
-                                        </div>`;
-                                    }
+                                        </div>
+                                    </div>`;
                                     // document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+doc.data().lat+`,`+doc.data().long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`
                                 }
                                 else{
-                                    if(doc.data().alerted == "yes"){
-                                        document.querySelector("#chat-area").innerHTML += 
-                                        `
-                                        <div class="chat-container pad" data-id="`+doc.id+`">
-                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
-                                            <div class ="row">
-                                                <div class="col-8">
-                                                    <p>`+doc.data().message+`<br>
-                                                    from: `+doc.data().sender+`<br>
-                                                    address: `+doc.data().address+`<br>
-                                                    </p>
-                                                </div>
+                                    document.querySelector("#chat-area").innerHTML += 
+                                    `
+                                    <div class="chat-container pad" data-id="`+doc.id+`">
+                                        <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
+                                        <div class ="row">
+                                            <div class="col-8">
+                                                <p>`+doc.data().message+`<br>
+                                                from: `+doc.data().sender+`<br>
+                                                address: `+doc.data().address+`<br>
+                                                </p>
                                             </div>
-                                            <div class ="row">
-                                                <div class="col">
-                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
-                                                </div>
+                                        </div>
+                                        <div class ="row">
+                                            <div class="col">
+                                                <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
                                             </div>
-                                        </div>`;
-                                    }
-                                    else{
-                                        document.querySelector("#chat-area").innerHTML += 
-                                        `
-                                        <div class="chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
-                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
-                                            <div class ="row">
-                                                <div class="col-8">
-                                                    <p>`+doc.data().message+`<br>
-                                                    from: `+doc.data().sender+`<br>
-                                                    address: `+doc.data().address+`<br>
-                                                    </p>
-                                                </div>
-                                                <div class="col-4" style ="margin-bottom: 1rem">
-                                                    <button type="button" class="btn btn-secondary btn-block alert" id="alert" >alert</button>
-                                                </div>
-                                            </div>
-                                            <div class ="row">
-                                                <div class="col">
-                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
-                                                </div>
-                                            </div>
-                                        </div>`;
-                                    }
+                                        </div>
+                                    </div>`;
                                 }
-                            }
+                            
                         })
                         .then(()=>{
                             

@@ -105,7 +105,7 @@
                 </div>
                 <div class="row">
                     <button id="sos" data-id="Police" class="btn btn-danger col" style="margin: 10px"><img src="img/icons/001-police-car.png"></button>
-                    <button id ="call" class="btn btn-success col" onclick="location.href='https://call-capable-warriors.herokuapp.com'" style="margin: 10px">Call</button>
+                    <button id ="call" class="btn btn-success col" style="margin: 10px">Call</button>
                 </div>
             </div>
             <!-- <button  class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button> -->
@@ -141,6 +141,7 @@
         var time_interval;
         let message;
         let message_id;
+        let roomHash;
         let token;
         
 
@@ -239,21 +240,63 @@
 
 
         document.querySelector("#call").addEventListener('click',()=>{
-            db.collection("userDetails").get()
-                .then(function(querySnapshot) {
-                    querySnapshot.forEach(function(doc) {
-                        console.log(doc.data().adminLevel, doc.data().village, village)
-                        if(doc.data().adminLevel == "admin" && doc.data().village == village){
-                            sendTo=doc.data().token
-                            console.log(sendTo);
-                        }
-                    });
-                }).then(()=>{
-                    callpush(sendTo)
+            auth.onAuthStateChanged(user => {
+                db.collection('userDetails').doc(user.uid).get().then(doc => {
+                    
+                })     
+            });
+            showPosition=(position)=> {
+                lat= position.coords.latitude
+                long= position.coords.longitude  
+            }
+            if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(showPosition);
+            } 
+            else {
+                console.log('Turn on your GPS, try again')
+            }
+            auth.onAuthStateChanged(authUser => {
+                db.collection('userDetails').doc(authUser.uid).get().then(doc => {
+                    token = doc.data().token;
+                    
+                    console.log("myToken", token)
+                }).then(()=>{     
+                    
+                    time = new Date()
+            
+                    db.collection('calls').add({
+                        sender: name,
+                        message: "HELP!! Requesting "+message,
+                        when: time,
+                        lat: lat,
+                        long: long,
+                        village: village,
+                        address: address,
+                        fromToken: token,
+                        userid: userid
+                        
+                    }).then((docRef)=>{
+                        console.log(docRef.id)
+                        roomHash = docRef.id
+                    })
+                    .then(()=>{db.collection("userDetails").get()
+                        .then(function(querySnapshot) {
+                            querySnapshot.forEach(function(doc) {
+                                console.log(doc.data().adminLevel, doc.data().village, village)
+                                if(doc.data().adminLevel == "admin" && doc.data().village == village){
+                                    sendTo=doc.data().token
+                                    console.log("sendTo",sendTo);
+                                }
+                            });
+                        }).then(()=>{
+                            callpush(sendTo, lat, long)
+                        })
+                    })
                 })
+            })
         })
 
-        function callpush(sendTo){
+        function callpush(sendTo, roomHash){
                 // console.log(""+long, lat, time, name, address, village, sendTo);
                 fetch("https://fcm.googleapis.com/fcm/send", {
                 method: 'POST',
@@ -262,6 +305,8 @@
                     "data": {
                         "notification":{
                             "title": "call",
+                            "lat": lat,
+                            "long": long
                         }
                     }
                 }),
@@ -273,6 +318,7 @@
             .then(response => response.json())
             .then(response => console.log('Success:', JSON.stringify(response)))
             .catch(error => console.error('Error:', error));
+            location.href='https://call-capable-warriors.herokuapp.com#lat:'+ lat +'long:'+ long ;
         }
         document.querySelectorAll("#sos").forEach(function(button){
             button.addEventListener("click", function(){
@@ -401,6 +447,9 @@
             $("#pushModalLabel").html(obj.title)
             $("#pushModalBody").html(obj.body.message)
             $("#pushModal").modal("show");
+
+            
+
 
             
             

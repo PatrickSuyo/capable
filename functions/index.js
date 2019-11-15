@@ -30,6 +30,11 @@ app.get('/home-admin', function (req, res) {
   // console.log(req.params)
 })
 
+app.get('/home-superadmin', function (req, res) {
+  res.sendFile(__dirname + "/views/home-superadmin.html")
+  // console.log(req.params)
+})
+
 app.get('/create', function (req, res) {
   res.sendFile(__dirname + "/views/createaccount.html")
   // console.log(req.params)
@@ -42,6 +47,10 @@ app.get('/villages', function (req, res) {
 app.get('/residents', function (req, res) {
     res.sendFile(__dirname + "/views/residents.html")
     // console.log(req.params)
+})
+app.get('/residents-superadmin', function (req, res) {
+  res.sendFile(__dirname + "/views/residents-superadmin.html")
+  // console.log(req.params)
 })
 
 app.get('/call', function (req, res) {
