@@ -108,23 +108,38 @@
     <script src="/__/firebase/init.js"></script>
     <script src="src/js/excellentexport.js" type="text/javascript"></script>
     <script type="text/javascript">
+
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+
     	$(document).ready(function(){
-        db.collection("messages").order("when").get()
-        .then(function(querySnapshot) {
-          querySnapshot.forEach(function(doc) {
-            displayMessages(doc.data())
+        auth.onAuthStateChanged(user => {
+          db.collection("messages").order("when").get()
+          .then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+              db.collection("userDetails").doc(user.uid).get().then(admin =>{
+                if(admin.data().village == doc.data().village){
+                  displayMessages(doc.data())
+                }
+                
+              })
+              
+            })
+          })
+          db.collection("calls").order("when").get()
+          .then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+              db.collection("userDetails").doc(user.uid).get().then(admin =>{
+                if(admin.data().village == doc.data().village){
+                  displayCalls(doc.data())
+                }
+                
+              })
+              
+            })
           })
         })
-        db.collection("calls").order("when").get()
-        .then(function(querySnapshot) {
-          querySnapshot.forEach(function(doc) {
-            displayCalls(doc.data())
-          })
-        })
 
-
-
-    		
     	});
 
     	function displayMessages(data) {
@@ -141,7 +156,7 @@
 
 				$(".tbl-msgs-reports > tbody").append(html);
       }
-      function displayMessages(data) {
+      function displayCalls(data) {
     		// console.log(data)
     		html = "";
     		$(".tbl-calls-reports > tbody").append(html);
