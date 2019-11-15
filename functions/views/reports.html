@@ -114,7 +114,7 @@
 
     	$(document).ready(function(){
         auth.onAuthStateChanged(user => {
-          db.collection("messages").order("when").get()
+          db.collection("messages").orderBy("when").get()
           .then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
               db.collection("userDetails").doc(user.uid).get().then(admin =>{
@@ -126,7 +126,7 @@
               
             })
           })
-          db.collection("calls").order("when").get()
+          db.collection("calls").orderBy("when").get()
           .then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
               db.collection("userDetails").doc(user.uid).get().then(admin =>{
