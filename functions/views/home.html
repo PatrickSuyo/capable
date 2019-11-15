@@ -228,16 +228,17 @@
 
         document.querySelector("#logout").addEventListener('click',()=>{
             auth.onAuthStateChanged(user => {
+                console.log(user.uid);
                 db.collection('userDetails').doc(user.uid).update({token: ""})
+                    .then(()=>{
+                        auth.signOut().then(()=> {
+                            location.href='/index';
+                            alert("successfully logged out");
+                        })
+                })
             })
-            auth.signOut().then(()=> {
-                location.href='/index';
-                alert("successfully logged out");
-            })
-
             
         })
-
 
         document.querySelector("#call").addEventListener('click',()=>{
             auth.onAuthStateChanged(user => {
@@ -266,7 +267,7 @@
             
                     db.collection('calls').add({
                         sender: name,
-                        message: "HELP!! Requesting "+message,
+                        message: "call",
                         when: time,
                         lat: lat,
                         long: long,
@@ -318,7 +319,7 @@
             .then(response => response.json())
             .then(response => console.log('Success:', JSON.stringify(response)))
             .catch(error => console.error('Error:', error));
-            location.href='https://call-capable-warriors.herokuapp.com#lat:'+ lat +'long:'+ long ;
+            location.href='https://call-capable-warriors.herokuapp.com#initlat:'+ lat +'long:'+ long ;
         }
         document.querySelectorAll("#sos").forEach(function(button){
             button.addEventListener("click", function(){
@@ -386,13 +387,12 @@
                         .then(function(querySnapshot) {
                             querySnapshot.forEach(function(doc) {
                                 console.log(doc.data().adminLevel, doc.data().village, village)
-                                if(doc.data().adminLevel == "admin" && doc.data().village == village){
+                                if(doc.data().adminLevel == "admin" &&doc.data().adminLevel == "sec" && doc.data().village == village){
                                     sendTo=doc.data().token
                                     console.log("sendTo",sendTo);
+                                    push(sendTo, long, lat, time, name, address, village, message, message_id, token)
                                 }
                             });
-                        }).then(()=>{
-                            push(sendTo, long, lat, time, name, address, village, message, message_id, token)
                         })
                     })
                 })

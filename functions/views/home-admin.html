@@ -31,6 +31,11 @@
             padding: 10px;
             margin: 3px 0px;
         }
+
+        .call {
+            -webkit-animation: blink 1s infinite;
+            animation: blink 1s infinite;
+        }
     
         /* Darker chat container */
         .darker {
@@ -137,6 +142,19 @@
                 background-color: #f1f1f1;  
             }
         }
+        @-webkit-keyframes answerblink {
+            0%, 49% {
+                background-color: #F08080;
+                
+            }
+            
+        }
+        @keyframes answerblink {
+            0%, 49% {
+                background-color: #F08080;
+            }
+           
+        }
         .calendar div {
             float:left;
             width:50px;
@@ -223,7 +241,7 @@
 
 
     <div id="snackbar">ALERT</div>
-    <button id = "call" style = "visibility: hidden;"class="btn btn-success">answer</button>
+    <button id ="call" style = "visibility: hidden;"class="btn btn-success call">answer</button>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="/__/firebase/6.6.0/firebase-app.js"></script>
@@ -308,7 +326,7 @@
                 console.log("calling")
                 document.querySelector("#call").style.visibility = "visible";
                 document.querySelector("#call").onclick = function() { 
-                    location.href='https://call-capable-warriors.herokuapp.com#lat:'+ obj.lat +'long:'+ obj.long
+                    location.href='https://call-capable-warriors.herokuapp.com#notinitlat:'+ obj.lat +'long:'+ obj.long
                 };
                 
             }
@@ -499,7 +517,9 @@
             for(i = 0; i < marker.length; i++){
                 marker[i].setAnimation(null);
             }
-            
+            if(map.getZoom() > 13){
+                map.setZoom(13);
+            }
             bounceMarker(_id);
 
             scrollBot();
@@ -884,12 +904,16 @@
 
         document.querySelector("#logout").addEventListener('click',()=>{
             auth.onAuthStateChanged(user => {
+                console.log(user.uid);
                 db.collection('userDetails').doc(user.uid).update({token: ""})
+                    .then(()=>{
+                        auth.signOut().then(()=> {
+                            location.href='/index';
+                            alert("successfully logged out");
+                        })
+                })
             })
-            auth.signOut().then(()=> {
-                location.href='/index';
-                alert("successfully logged out");
-            })
+            
         })
 
         window.onload=checkAuth();
