@@ -55,7 +55,10 @@ app.get('/residents-superadmin', function (req, res) {
 
 app.get('/call', function (req, res) {
   res.sendFile(__dirname + "/views/call.html")
-  
+})
+
+app.get('/reports', function (req, res) {
+  res.sendFile(__dirname + "/views/reports.html")
 })
 
 exports.app = functions.https.onRequest(app);
