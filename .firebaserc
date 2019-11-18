@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "capable-warriors-security"
+    "emergency-app": "capable-warriors-emergency",
+    "default": "capable-warriors-emergency"
   }
 }

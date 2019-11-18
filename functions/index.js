@@ -52,6 +52,10 @@ app.get('/residents-superadmin', function (req, res) {
   res.sendFile(__dirname + "/views/residents-superadmin.html")
   // console.log(req.params)
 })
+app.get('/reports-superadmin', function (req, res) {
+  res.sendFile(__dirname + "/views/reports-superadmin.html")
+  // console.log(req.params)
+})
 
 app.get('/call', function (req, res) {
   res.sendFile(__dirname + "/views/call.html")

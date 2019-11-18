@@ -53,7 +53,7 @@
         }
     </style>
 </head>
-<body>
+<body style = "background-color: rgb(25, 25, 25); color: white">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">Security App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -152,7 +152,7 @@
     <div id="snackbar">Saving..</div>
 
     <!--Logout Modal -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div style = "color: black" class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
             <div class="modal-header">
@@ -161,7 +161,7 @@
                 <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style = "color: black">
                 Are you sure you want to logout?
             </div>
             <div class="modal-footer">
@@ -195,12 +195,18 @@
             
         });
 
-        $('#logout').click(function(){
-            firebase.auth().signOut().then(function() {
-                location.href='/index';
-            }).catch(function(error) {
-                location.href='/index';
-            });
+        document.querySelector("#logout").addEventListener('click',()=>{
+            auth.onAuthStateChanged(user => {
+                console.log(user.uid);
+                db.collection('userDetails').doc(user.uid).update({token: ""})
+                    .then(()=>{
+                        auth.signOut().then(()=> {
+                            location.href='/index';
+                            alert("successfully logged out");
+                        })
+                })
+            })
+            
         })
         //unregisted residents
         // function getUnregResidents() {

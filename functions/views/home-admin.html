@@ -182,7 +182,7 @@
 
     </style>
 </head>
-<body>
+<body style = "background-color: rgb(25, 25, 25)">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">Security App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -234,10 +234,10 @@
     
     <div class = "container-fluid" id="scroller">
         <div class ="row">
-            <div class = "col chat-container">
+            <div class = "col chat-container" style = "background-color: rgb(25, 25, 25)!important">
                     <div id="map"></div>
             </div>
-            <div class = "col chat-container" id="scroller">
+            <div class = "col chat-container" id="scroller" style = "background-color: rgb(25, 25, 25)!important">
                 <div class="table-wrapper-scroll-y my-custom-scrollbar btn-group chat" id="chat-area">
                     <p class="text-center" style ="color: #aaa;">Messages..</p>
                 </div>  
@@ -247,7 +247,7 @@
 
 
     <div id="snackbar">ALERT</div>
-    <button id ="call" style = "visibility: hidden;"class="btn btn-success call">answer</button>
+    <button id ="call" style = "visibility: hidden;"class="btn btn-success btn-lg call ">answer</button>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="/__/firebase/6.6.0/firebase-app.js"></script>
@@ -281,7 +281,7 @@
         //     console.log('Turn on your GPS, try again')
         // }
 
-        messaging.usePublicVapidKey("BF4RnEglCJNyRXHKIFG5o8MNGE-lRKVQW8XdHUjNG_RWRHow8ptjJ1KBvdVGL9qVeKoaFdNug6Z4uzjkqPE-Oi4")
+        messaging.usePublicVapidKey("BDfaExC9S4EqBKC7oKrbiyO2XlHq77VtthbeG3rEpqp6AZMRWOxpsbA3jvGIW2VlimLNYWpHh26VQu4ZXJg-mB8")
         
         // navigator.serviceWorker.register('/firebase-messaging-sw.js')
         // .then(function (registration) {
@@ -563,14 +563,25 @@
                 db.collection('userDetails').doc(user.uid).get().then(doc => {
                     if(doc.data().adminLevel -= "user"){
                         location.href='/home';
-                    }else if (doc.data().adminLevel == "superadmin"){
-                        location.href='/superadmin';
+                    }else if (doc.data().adminLevel == "home-superadmin"){
+                        location.href='/home-superadmin';
                     }
                 }).then(()=>{
                     initMap();
                     loadChat();
                 })
             })
+            return messaging.getToken()
+            .then((currentToken) => {
+                console.log(currentToken)
+                auth.onAuthStateChanged(user => {
+                    db.collection('userDetails').doc(user.uid).update({token: currentToken})
+                })     
+                
+            })
+            .catch((err)=>{
+            console.log('Unable to get permission to notify.', err);
+            }) 
 
         }
         document.querySelector("#chat-area").addEventListener('click', function(e){
@@ -657,7 +668,7 @@
                 }),
                 headers:{
                     'Content-Type': 'application/json',
-                    'Authorization': 'key=AAAAjASwrMs:APA91bHRryIujStkzpAP5fHsmzbB20uwtM3-FwadgdrMbAs2J5AveXRtiVlJ-4T8r1vYq5a0iAw77QofchZcleBXl2QJJfBQOxS_iAUk1AMpILa8AZdpIx0W8tYd_gRCr1uv21v531YX'
+                    'Authorization': 'key=AAAArKWH2EU:APA91bEjeU4lShQgHzJBeEeEnXUj90u2UKvpZ4EK7ODh9_ShpUTJI1__mcLMRhEfm5AdAmXfP9esRU7rG1nogasxZNU4g-SKlnO-1Bst2KO3kWmo0mejI841aVWpiEX9XwFFmCfCTtH-'
                 }
             })
             .then(response => response.json())

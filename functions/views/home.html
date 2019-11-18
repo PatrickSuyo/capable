@@ -15,7 +15,7 @@
     </style>
 
 </head>
-<body>
+<body style = "background-color: rgb(25, 25, 25)">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">Security App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,7 +111,7 @@
             <!-- <button  class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">Call</button> -->
         </div>
         <div id = "confirm" style="display:none">
-            <p class="text-center">please wait for your account to be confirmed</p>
+            <p class="text-center" style = "color: white">please wait for your account to be confirmed</p>
         </div>
     </div>
     <!-- The core Firebase JS SDK is always required and must be listed first -->
@@ -145,7 +145,7 @@
         let token;
         
 
-        messaging.usePublicVapidKey("BF4RnEglCJNyRXHKIFG5o8MNGE-lRKVQW8XdHUjNG_RWRHow8ptjJ1KBvdVGL9qVeKoaFdNug6Z4uzjkqPE-Oi4")
+        messaging.usePublicVapidKey("BDfaExC9S4EqBKC7oKrbiyO2XlHq77VtthbeG3rEpqp6AZMRWOxpsbA3jvGIW2VlimLNYWpHh26VQu4ZXJg-mB8")
 
         showPosition=(position)=> {
             lat= position.coords.latitude
@@ -191,6 +191,17 @@
                         z.style.display = "none";
                     }
                 })
+            })
+            return messaging.getToken()
+            .then((currentToken) => {
+                console.log(currentToken)
+                auth.onAuthStateChanged(user => {
+                    db.collection('userDetails').doc(user.uid).update({token: currentToken})
+                })     
+                
+            })
+            .catch((err)=>{
+            console.log('Unable to get permission to notify.', err);
             })
             Notification.requestPermission().then(() => {
                 console.log('Notification permission granted.');
@@ -313,7 +324,7 @@
                 }),
                 headers:{
                     'Content-Type': 'application/json',
-                    'Authorization': 'key=AAAAjASwrMs:APA91bHRryIujStkzpAP5fHsmzbB20uwtM3-FwadgdrMbAs2J5AveXRtiVlJ-4T8r1vYq5a0iAw77QofchZcleBXl2QJJfBQOxS_iAUk1AMpILa8AZdpIx0W8tYd_gRCr1uv21v531YX'
+                    'Authorization': 'key=AAAArKWH2EU:APA91bEjeU4lShQgHzJBeEeEnXUj90u2UKvpZ4EK7ODh9_ShpUTJI1__mcLMRhEfm5AdAmXfP9esRU7rG1nogasxZNU4g-SKlnO-1Bst2KO3kWmo0mejI841aVWpiEX9XwFFmCfCTtH-'
                 }
             })
             .then(response => response.json())

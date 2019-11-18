@@ -22,14 +22,18 @@
         <ul class="nav navbar-nav ml-auto">
 
             <li class="nav-item">
-                <a class="nav-link" href="/home-admin">Home</a>
+                <a class="nav-link" href="/home-superadmin">Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/residents">Residents</a>
+                <a class="nav-link" href="/residents-superadmin">Residents</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/reports">Reports</a>
+                <a class="nav-link" href="/reports-superadmin">Reports</a>
             </li>
+            <li class="nav-item">
+                    <a class="nav-link" href="/villages">Villages</a>
+                </li>
+            <li class="nav-item">
             <li class="nav-item">
                 <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Logout</a>
             </li>
@@ -138,26 +142,14 @@
         auth.onAuthStateChanged(user => {
           db.collection("messages").orderBy("when").get()
           .then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-              db.collection("userDetails").doc(user.uid).get().then(admin =>{
-                if(admin.data().village == doc.data().village){
-                  displayMessages(doc.data())
-                }
-                
-              })
-              
+            querySnapshot.forEach(function(doc) {  
+                  displayMessages(doc.data())  
             })
           })
           db.collection("calls").orderBy("when").get()
           .then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
-              db.collection("userDetails").doc(user.uid).get().then(admin =>{
-                if(admin.data().village == doc.data().village){
                   displayCalls(doc.data())
-                }
-                
-              })
-              
             })
           })
         })

@@ -1,7 +1,7 @@
 {
   "name": "CAPABLE WARRIORS",
   "short_name": "CAPABLE WARRIORS",
-  "start_url": "https://capable-warriors-security.firebaseapp.com/index",
+  "start_url": "https://capable-warriors-emergency.firebaseapp.com/index",
 
   "display": "standalone",
   "orientation": "portrait",

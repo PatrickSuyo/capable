@@ -8,6 +8,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         #map {
 			height: 100%;
@@ -29,6 +30,11 @@
             border-radius: 5px;
             padding: 10px;
             margin: 3px 0px;
+        }
+
+        .call {
+            -webkit-animation: blink 1s infinite;
+            animation: blink 1s infinite;
         }
     
         /* Darker chat container */
@@ -136,6 +142,25 @@
                 background-color: #f1f1f1;  
             }
         }
+        @-webkit-keyframes answerblink {
+            0%, 49% {
+                background-color: #F08080;
+ 
+            }
+            50%, 100% {
+                background-color: green;  
+            }
+            
+        }
+        @keyframes answerblink {
+            0%, 49% {
+                background-color: #F08080;
+            }
+            50%, 100% {
+                background-color: green;  
+            }
+           
+        }
         .calendar div {
             float:left;
             width:50px;
@@ -157,7 +182,7 @@
 
     </style>
 </head>
-<body>
+<body style = "background-color: rgb(25, 25, 25)">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">Security App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -167,17 +192,17 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="nav navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/home-admin">Home</a>
+                    <a class="nav-link" href="/home-superadmin">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/residents-superadmin">Residents</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/villages">Villages</a>
+                    <a class="nav-link" href="/reports-superadmin">Reports</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/reports">Reports</a>
-                </li>
+                        <a class="nav-link" href="/villages">Villages</a>
+                    </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Logout</a>
                 </li>
@@ -212,10 +237,10 @@
     
     <div class = "container-fluid" id="scroller">
         <div class ="row">
-            <div class = "col chat-container">
+            <div class = "col chat-container" style = "background-color: rgb(25, 25, 25)!important">
                     <div id="map"></div>
             </div>
-            <div class = "col chat-container" id="scroller">
+            <div class = "col chat-container" id="scroller" style = "background-color: rgb(25, 25, 25)!important">
                 <div class="table-wrapper-scroll-y my-custom-scrollbar btn-group chat" id="chat-area">
                     <p class="text-center" style ="color: #aaa;">Messages..</p>
                 </div>  
@@ -225,7 +250,7 @@
 
 
     <div id="snackbar">ALERT</div>
-    <button id = "call" style = "visibility: hidden;"class="btn btn-success" onclick="location.href='https://call-capable-warriors.herokuapp.com'">answer</button>
+    <button id ="call" style = "visibility: hidden;"class="btn btn-success btn-lg call ">answer</button>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="/__/firebase/6.6.0/firebase-app.js"></script>
@@ -259,7 +284,7 @@
         //     console.log('Turn on your GPS, try again')
         // }
 
-        messaging.usePublicVapidKey("BF4RnEglCJNyRXHKIFG5o8MNGE-lRKVQW8XdHUjNG_RWRHow8ptjJ1KBvdVGL9qVeKoaFdNug6Z4uzjkqPE-Oi4")
+        messaging.usePublicVapidKey("BDfaExC9S4EqBKC7oKrbiyO2XlHq77VtthbeG3rEpqp6AZMRWOxpsbA3jvGIW2VlimLNYWpHh26VQu4ZXJg-mB8")
         
         // navigator.serviceWorker.register('/firebase-messaging-sw.js')
         // .then(function (registration) {
@@ -309,6 +334,9 @@
             if(obj.title == "call"){
                 console.log("calling")
                 document.querySelector("#call").style.visibility = "visible";
+                document.querySelector("#call").onclick = function() { 
+                    location.href='https://call-capable-warriors.herokuapp.com#lat:'+ obj.lat +'long:'+ obj.long
+                };
                 
             }
             else{
@@ -335,7 +363,10 @@
                             address: `+obj.body.address+`<br>
                             </p>
                         </div>
-                        
+                        <div class="col-4" style ="margin-bottom: 1rem">
+                            <button type="button" class="btn btn-secondary btn-block respo" id="respond">respond</button>
+                            <button type="button" class="btn btn-secondary btn-block alert" id="alert" >alert</button>
+                        </div>
                     </div>
                     <div class ="row">
                         <div class="col">
@@ -410,7 +441,8 @@
                                                     map: map,
                                                     id: doc.id,
                                                     title: 'Help Request from '+ doc.data().sender,
-                                                    animation: google.maps.Animation.DROP
+                                                    animation: google.maps.Animation.DROP,
+                                                    zoom: 13
                                                     // icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
                                                 });
                                                 
@@ -494,7 +526,9 @@
             for(i = 0; i < marker.length; i++){
                 marker[i].setAnimation(null);
             }
-            
+            if(map.getZoom() > 13){
+                map.setZoom(13);
+            }
             bounceMarker(_id);
 
             scrollBot();
@@ -532,14 +566,26 @@
                 db.collection('userDetails').doc(user.uid).get().then(doc => {
                     if(doc.data().adminLevel -= "user"){
                         location.href='/home';
-                    }else if (doc.data().adminLevel == "superadmin"){
-                        location.href='/superadmin';
+                    }
+                    else if (doc.data().adminLevel == "home-admin"){
+                        location.href='/admin';
                     }
                 }).then(()=>{
                     initMap();
                     loadChat();
                 })
             })
+            return messaging.getToken()
+            .then((currentToken) => {
+                console.log(currentToken)
+                auth.onAuthStateChanged(user => {
+                    db.collection('userDetails').doc(user.uid).update({token: currentToken})
+                })     
+                
+            })
+            .catch((err)=>{
+            console.log('Unable to get permission to notify.', err);
+            }) 
 
         }
         document.querySelector("#chat-area").addEventListener('click', function(e){
@@ -562,7 +608,34 @@
                     }).then(()=>{
                         console.log("respondpush",senderToken, message)
                         respondPush(senderToken, message);
-                        alertPush(senderID, message);
+                        // alertPush(senderID, message);
+                    })
+                    
+                })
+
+                e.target.remove();
+                // alertPush(senderID, message);
+            }
+            else if(e.target.classList.contains('alert')) {
+                console.log(e.target.parentNode)
+                x = e.target.parentNode.parentNode.parentNode
+                // x.setAttribute("class", "chat-container pad")
+                
+                let messageID = x.getAttribute("data-id")
+                let senderToken = x.getAttribute("data-token")
+                let senderID = x.getAttribute("data-id")
+                console.log("sender", senderToken);
+                
+                db.collection('messages').doc(messageID)
+                .update({alerted: "yes"})
+                .then(()=>{
+                    db.collection('messages').doc(messageID).get().then(doc => {
+                    //    console.log(doc.data().message.slice(18))
+                       message = doc.data().message.slice(18)
+                    }).then(()=>{
+                        // console.log("respondpush",senderToken, message)
+                        // respondPush(senderToken, message);
+                        alertPush(senderToken, message);
                     })
                     
                 })
@@ -599,7 +672,7 @@
                 }),
                 headers:{
                     'Content-Type': 'application/json',
-                    'Authorization': 'key=AAAAjASwrMs:APA91bHRryIujStkzpAP5fHsmzbB20uwtM3-FwadgdrMbAs2J5AveXRtiVlJ-4T8r1vYq5a0iAw77QofchZcleBXl2QJJfBQOxS_iAUk1AMpILa8AZdpIx0W8tYd_gRCr1uv21v531YX'
+                    'Authorization': 'key=AAAArKWH2EU:APA91bEjeU4lShQgHzJBeEeEnXUj90u2UKvpZ4EK7ODh9_ShpUTJI1__mcLMRhEfm5AdAmXfP9esRU7rG1nogasxZNU4g-SKlnO-1Bst2KO3kWmo0mejI841aVWpiEX9XwFFmCfCTtH-'
                 }
             })
             .then(response => response.json())
@@ -607,9 +680,55 @@
             .catch(error => console.error('Error:', error));
         }
 
-        function alertPush(senderID, message){
-            console.log("alertpush", senderID, message)
+        function alertPush(senderToken, message){
+            // console.log("alertpush", senderID, message)
+            auth.onAuthStateChanged(admin => {
+                console.log("admin", admin.uid);
+                db.collection("userDetails").get()
+                .then(residents =>{
+                    residents.forEach(function(doc) {
+                        db.collection("userDetails").doc(admin.uid).get().then((admin)=>{
+                            console.log("compare", doc.data().token , senderToken)
+                            if(doc.data().village == admin.data().village && doc.data().token != senderToken && doc.data().adminLevel != "admin" && doc.data().adminLevel != "superadmin" && doc.data().adminLevel != "sec"){
+                                let incident;
+                                if(message == "Ambulance"){
+                                    incident = "an Accident/Emergency"
+                                }
+                                else if(message == "Fire Truck"){
+                                    incident = "a Fire"
+                                }
+                                else if(message == "Police"){
+                                    incident = "a Robbery/Crime"
+                                }
 
+
+                                fetch("https://fcm.googleapis.com/fcm/send", {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                        "to": doc.data().token, 
+                                        "data": {
+                                            "notification":{
+                                                "title": "Incident nearby",
+                                                "body":{
+                                                    "message": "someone in you area reported "+ incident
+                                                },
+                                                "icon": "src/images/icons/icon-72x72.png"
+                                            }
+                                        }
+                                    }),
+                                    headers:{
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'key=AAAAjASwrMs:APA91bHRryIujStkzpAP5fHsmzbB20uwtM3-FwadgdrMbAs2J5AveXRtiVlJ-4T8r1vYq5a0iAw77QofchZcleBXl2QJJfBQOxS_iAUk1AMpILa8AZdpIx0W8tYd_gRCr1uv21v531YX'
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(response => console.log('Success:', JSON.stringify(response)))
+                                .catch(error => console.error('Error:', error));
+                                                }
+                                            })
+                                        })
+                                    })
+                                })
         }
 
 
@@ -684,52 +803,105 @@
                 .then(messages =>{
                     messages.forEach(function(doc) {
                         db.collection("userDetails").doc(user.uid).get().then((user)=>{
-                            
+                            if(doc.data().village == user.data().village){
                                 console.log("message", doc.data().village, doc.data().read, user.data().village)
                             // doc.data() is never undefined for query doc snapshot
                                 if(doc.data().read == "no"){
-                                    document.querySelector("#chat-area").innerHTML += 
-                                    `
-                                    <div class="new-chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
-                                        <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
-                                        <div class ="row">
-                                            <div class="col-8">
-                                                <p>`+doc.data().message+`<br>
-                                                from: `+doc.data().sender+`<br>
-                                                address: `+doc.data().address+`<br>
-                                                </p>
+                                    if(doc.data().alerted == "no"){
+                                        document.querySelector("#chat-area").innerHTML += 
+                                        `
+                                        <div class="new-chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
+                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
+                                            <div class ="row">
+                                                <div class="col-8">
+                                                    <p>`+doc.data().message+`<br>
+                                                    from: `+doc.data().sender+`<br>
+                                                    address: `+doc.data().address+`<br>
+                                                    </p>
+                                                </div>
+                                                <div class="col-4" style ="margin-bottom: 1rem">
+                                                        <button type="button" class="btn btn-secondary btn-block respo" id="respond" >respond</button>
+                                                        <button type="button" class="btn btn-secondary btn-block alert" id="alert" >alert</button>
+                                                </div>
                                             </div>
-                                            
-                                        </div>
-                                        <div class ="row">
-                                            <div class="col">
-                                                <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
+                                            <div class ="row">
+                                                <div class="col">
+                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>`;
+                                        </div>`;
+                                    }
+                                    else{
+                                        document.querySelector("#chat-area").innerHTML += 
+                                        `
+                                        <div class="new-chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
+                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
+                                            <div class ="row">
+                                                <div class="col-8">
+                                                    <p>`+doc.data().message+`<br>
+                                                    from: `+doc.data().sender+`<br>
+                                                    address: `+doc.data().address+`<br>
+                                                    </p>
+                                                </div>
+                                                <div class="col-4" style ="margin-bottom: 1rem">
+                                                        <button type="button" class="btn btn-secondary btn-block respo" id="respond" >respond</button>
+                                                </div>
+                                            </div>
+                                            <div class ="row">
+                                                <div class="col">
+                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
+                                                </div>
+                                            </div>
+                                        </div>`;
+                                    }
                                     // document.querySelector("#location-body").innerHTML = `<iframe src='https://www.google.com/maps?q=`+doc.data().lat+`,`+doc.data().long+`&output=embed&z=17' style="border:none;height:500px;width:100%;"></iframe>`
                                 }
                                 else{
-                                    document.querySelector("#chat-area").innerHTML += 
-                                    `
-                                    <div class="chat-container pad" data-id="`+doc.id+`">
-                                        <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
-                                        <div class ="row">
-                                            <div class="col-8">
-                                                <p>`+doc.data().message+`<br>
-                                                from: `+doc.data().sender+`<br>
-                                                address: `+doc.data().address+`<br>
-                                                </p>
+                                    if(doc.data().alerted == "yes"){
+                                        document.querySelector("#chat-area").innerHTML += 
+                                        `
+                                        <div class="chat-container pad" data-id="`+doc.id+`">
+                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
+                                            <div class ="row">
+                                                <div class="col-8">
+                                                    <p>`+doc.data().message+`<br>
+                                                    from: `+doc.data().sender+`<br>
+                                                    address: `+doc.data().address+`<br>
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class ="row">
-                                            <div class="col">
-                                                <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
+                                            <div class ="row">
+                                                <div class="col">
+                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>`;
+                                        </div>`;
+                                    }
+                                    else{
+                                        document.querySelector("#chat-area").innerHTML += 
+                                        `
+                                        <div class="chat-container pad" data-id="`+doc.id+`" data-token="`+doc.data().fromToken+`" data-id="`+doc.data().userid+`">
+                                            <input type="radio" name="chat" value="`+doc.id+`" id="`+doc.id+`"/>
+                                            <div class ="row">
+                                                <div class="col-8">
+                                                    <p>`+doc.data().message+`<br>
+                                                    from: `+doc.data().sender+`<br>
+                                                    address: `+doc.data().address+`<br>
+                                                    </p>
+                                                </div>
+                                                <div class="col-4" style ="margin-bottom: 1rem">
+                                                    <button type="button" class="btn btn-secondary btn-block alert" id="alert" >alert</button>
+                                                </div>
+                                            </div>
+                                            <div class ="row">
+                                                <div class="col">
+                                                    <span class="time-right">`+doc.data().when.toDate().getHours()+`:`+addZero(doc.data().when.toDate().getMinutes())+`</span>
+                                                </div>
+                                            </div>
+                                        </div>`;
+                                    }
                                 }
-                            
+                            }
                         })
                         .then(()=>{
                             
@@ -753,12 +925,16 @@
 
         document.querySelector("#logout").addEventListener('click',()=>{
             auth.onAuthStateChanged(user => {
+                console.log(user.uid);
                 db.collection('userDetails').doc(user.uid).update({token: ""})
+                    .then(()=>{
+                        auth.signOut().then(()=> {
+                            location.href='/index';
+                            alert("successfully logged out");
+                        })
+                })
             })
-            auth.signOut().then(()=> {
-                location.href='/index';
-                alert("successfully logged out");
-            })
+            
         })
 
         window.onload=checkAuth();
