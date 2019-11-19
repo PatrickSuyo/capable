@@ -147,6 +147,24 @@
 
         messaging.usePublicVapidKey("BDfaExC9S4EqBKC7oKrbiyO2XlHq77VtthbeG3rEpqp6AZMRWOxpsbA3jvGIW2VlimLNYWpHh26VQu4ZXJg-mB8")
 
+        Notification.requestPermission().then(() => {
+                console.log('Notification permission granted.');
+                // TODO(developer): Retrieve an Instance ID token for use with FCM.
+                // ...
+                return messaging.getToken()
+                .then((currentToken) => {
+                    console.log(currentToken)
+                    auth.onAuthStateChanged(user => {
+                        console.log("token saved")
+                        db.collection('userDetails').doc(user.uid).update({token: currentToken})
+                    })     
+                    
+                })
+                .catch((err)=>{
+                console.log('Unable to get permission to notify.', err);
+                })
+                
+        }); 
         showPosition=(position)=> {
             lat= position.coords.latitude
             long= position.coords.longitude  
@@ -436,7 +454,7 @@
                 }),
                 headers:{
                     'Content-Type': 'application/json',
-                    'Authorization': 'key=AAAAjASwrMs:APA91bHRryIujStkzpAP5fHsmzbB20uwtM3-FwadgdrMbAs2J5AveXRtiVlJ-4T8r1vYq5a0iAw77QofchZcleBXl2QJJfBQOxS_iAUk1AMpILa8AZdpIx0W8tYd_gRCr1uv21v531YX'
+                    'Authorization': 'key=AAAArKWH2EU:APA91bEjeU4lShQgHzJBeEeEnXUj90u2UKvpZ4EK7ODh9_ShpUTJI1__mcLMRhEfm5AdAmXfP9esRU7rG1nogasxZNU4g-SKlnO-1Bst2KO3kWmo0mejI841aVWpiEX9XwFFmCfCTtH-'
                 }
             })
             .then(response => response.json())
